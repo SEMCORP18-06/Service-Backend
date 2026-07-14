@@ -156,7 +156,7 @@ function createInvoicePDF(ticket) {
 
 // Helper: Send Email via Resend HTTP API (using verified domain)
 async function sendEmailViaResend(to, subject, htmlContent, attachments = []) {
-  const apiKey = process.env.RESEND_API_KEY || 're_52BJcTNY_GhS5JXsQnnKfcNFT2TyWpAR4';
+  const apiKey = process.env.RESEND_API_KEY;
   
   const resendAttachments = attachments.map(att => ({
     content: att.content.toString('base64'),
