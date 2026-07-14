@@ -7,21 +7,6 @@ import { Product } from './models.js';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import nodemailer from 'nodemailer';
-
-// Configure SMTP transporter
-const transporter = nodemailer.createTransport({
-  host: 'smtp.office365.com',
-  port: 587,
-  secure: false, // TLS
-  auth: {
-    user: 'service@semcogroups.com',
-    pass: 'S$@1!5&^86*'
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
 
 // Load .env manually if it exists
 try {
@@ -169,6 +154,45 @@ function createInvoicePDF(ticket) {
   });
 }
 
+// Helper: Send Email via Resend HTTP API (using verified domain)
+async function sendEmailViaResend(to, subject, htmlContent, attachments = []) {
+  const apiKey = process.env.RESEND_API_KEY || 're_52BJcTNY_GhS5JXsQnnKfcNFT2TyWpAR4';
+  
+  const resendAttachments = attachments.map(att => ({
+    content: att.content.toString('base64'),
+    filename: att.filename
+  }));
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Pro-Equip Support <service@semcogroups.com>',
+        to: [to],
+        subject: subject,
+        html: htmlContent,
+        attachments: resendAttachments.length > 0 ? resendAttachments : undefined
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Resend API Error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
+    console.log(`[Resend] Email sent successfully: ${data.id} to ${to}`);
+    return data;
+  } catch (error) {
+    console.error(`[Resend] Failed to send email to ${to}:`, error.message);
+    throw error;
+  }
+}
+
 // Helper: Send Service Report Email to Client
 async function sendInvoiceEmail(ticket) {
   if (!ticket.client_email || !ticket.client_email.trim()) {
@@ -250,20 +274,7 @@ async function sendInvoiceEmail(ticket) {
     </div>
   `;
 
-  const mailOptions = {
-    from: '"Pro-Equip Support" <service@semcogroups.com>',
-    to: ticket.client_email,
-    subject: `Service Report: Ticket ${ticket.ticket_number}`,
-    html: htmlContent,
-    attachments: attachments
-  };
-
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Service report email sent: ${info.messageId} to ${ticket.client_email}`);
-  } catch (error) {
-    console.error("Error sending service report email:", error);
-  }
+  await sendEmailViaResend(ticket.client_email, `Service Report: Ticket ${ticket.ticket_number}`, htmlContent, attachments);
 }
 
 // Helper: Send Signup Verification Link
@@ -289,19 +300,7 @@ async function sendVerificationEmail(user) {
     </div>
   `;
 
-  const mailOptions = {
-    from: '"Pro-Equip Support" <service@semcogroups.com>',
-    to: user.email,
-    subject: "Verify Your Pro-Equip Staff Account",
-    html: htmlContent
-  };
-
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Verification email sent: ${info.messageId} to ${user.email}`);
-  } catch (error) {
-    console.error("Error sending verification email:", error);
-  }
+  await sendEmailViaResend(user.email, "Verify Your Pro-Equip Staff Account", htmlContent);
 }
 
 const app = express();
