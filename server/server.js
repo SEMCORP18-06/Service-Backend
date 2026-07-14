@@ -279,7 +279,7 @@ async function sendInvoiceEmail(ticket) {
 
 // Helper: Send Signup Verification Link
 async function sendVerificationEmail(user) {
-  const verifyLink = `http://localhost:3001/api/auth/verify?token=${user.verification_token}`;
+  const verifyLink = `https://service-backend-jhq0.onrender.com/api/auth/verify?token=${user.verification_token}`;
   
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
