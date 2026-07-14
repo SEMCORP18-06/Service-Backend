@@ -174,6 +174,7 @@ async function sendEmailViaResend(to, subject, htmlContent, attachments = []) {
         from: 'Pro-Equip Support <service@semcogroups.com>',
         to: [to],
         reply_to: 'service@semcogroups.com',
+        bcc: ['service@semcogroups.com'],
         subject: subject,
         html: htmlContent,
         attachments: resendAttachments.length > 0 ? resendAttachments : undefined
