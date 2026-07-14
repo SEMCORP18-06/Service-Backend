@@ -3,7 +3,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { db } from './db.js';
-import { Product } from './models.js';
+import { Product, Company } from './models.js';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
@@ -513,8 +513,22 @@ app.post('/api/tickets', async (req, res) => {
   }
 
   try {
+    let finalCompanyId = null;
+    const parsedId = parseInt(company_id);
+    if (!isNaN(parsedId)) {
+      const company = await Company.findOne({ id: parsedId });
+      if (company) {
+        finalCompanyId = company.id;
+      }
+    }
+
+    if (!finalCompanyId) {
+      const company = await db.createCompany(String(company_id));
+      finalCompanyId = company.id;
+    }
+
     const ticket = await db.createTicket({
-      company_id,
+      company_id: finalCompanyId,
       product_name,
       client_whatsapp,
       client_email,
