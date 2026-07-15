@@ -45,8 +45,8 @@ function createInvoicePDF(ticket) {
       doc.on('error', reject);
 
       // Title / Header
-      doc.fillColor('#06b6d4').fontSize(22).text('PRO-EQUIP SERVICE PORTAL', { align: 'center' });
-      doc.fillColor('#718096').fontSize(10).text('PROCESS EQUIPMENT DIVISION', { align: 'center', letterSpacing: 2 });
+      doc.fillColor('#06b6d4').fontSize(22).text('SEMCORP SERVICE PORTAL', { align: 'center' });
+      doc.fillColor('#718096').fontSize(10).text('PROCESS & VACUUM SYSTEMS', { align: 'center', letterSpacing: 2 });
       doc.moveDown(0.5);
       doc.fillColor('#333333').fontSize(14).text('INVOICE & SERVICE REPORT', { align: 'center' });
       doc.moveDown();
@@ -138,7 +138,7 @@ function createInvoicePDF(ticket) {
       doc.y += 15;
 
       doc.font('Helvetica-Bold').fillColor('#06b6d4').fontSize(10);
-      doc.text('Thank You for Choosing Pro-Equip!', 50, doc.y, { align: 'center', width: 500 });
+      doc.text('Thank You for Choosing SEMCORP!', 50, doc.y, { align: 'center', width: 500 });
       doc.moveDown(0.4);
       doc.font('Helvetica').fillColor('#a0aec0').fontSize(8);
       doc.text('If you have any inquiries regarding this invoice, please reach out to your Account Manager.', 50, doc.y, { align: 'center', width: 500 });
@@ -171,7 +171,7 @@ async function sendEmailViaResend(to, subject, htmlContent, attachments = []) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Pro-Equip Support <service@semcogroups.com>',
+        from: 'SEMCORP Support <service@semcogroups.com>',
         to: [to],
         reply_to: 'service@semcogroups.com',
         bcc: ['service@semcogroups.com'],
@@ -223,8 +223,8 @@ async function sendInvoiceEmail(ticket) {
     <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #edf2f7; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); color: #2d3748; line-height: 1.6;">
       
       <div style="text-align: center; margin-bottom: 25px;">
-        <span style="font-size: 24px; font-weight: 800; color: #06b6d4; letter-spacing: 1px;">PRO-EQUIP</span>
-        <div style="font-size: 11px; color: #718096; text-transform: uppercase; margin-top: 4px; letter-spacing: 2px; font-weight: 600;">Process Equipment Division</div>
+        <span style="font-size: 24px; font-weight: 800; color: #06b6d4; letter-spacing: 1px;">SEMCORP</span>
+        <div style="font-size: 11px; color: #718096; text-transform: uppercase; margin-top: 4px; letter-spacing: 2px; font-weight: 600;">Process & Vacuum Systems</div>
       </div>
 
       <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 24px; border-radius: 10px; color: #ffffff; margin-bottom: 30px; text-align: center;">
@@ -287,7 +287,7 @@ async function sendVerificationEmail(user) {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
       <h2 style="color: #06b6d4; border-bottom: 2px solid #06b6d4; padding-bottom: 10px;">Verify Your Email Address</h2>
       <p>Dear ${user.name},</p>
-      <p>Thank you for registering a staff account on the Pro-Equip Support Portal. Please click the button below to verify your email and activate your account:</p>
+      <p>Thank you for registering a staff account on the SEMCORP Service Portal. Please click the button below to verify your email and activate your account:</p>
       
       <div style="text-align: center; margin: 30px 0;">
         <a href="${verifyLink}" style="background-color: #06b6d4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Account</a>
@@ -302,7 +302,7 @@ async function sendVerificationEmail(user) {
     </div>
   `;
 
-  await sendEmailViaResend(user.email, "Verify Your Pro-Equip Staff Account", htmlContent);
+  await sendEmailViaResend(user.email, "Verify Your SEMCORP Staff Account", htmlContent);
 }
 
 const app = express();
@@ -617,7 +617,7 @@ app.patch('/api/tickets/:id/status', async (req, res) => {
       });
       broadcastWhatsAppMessage(updatedTicket.client_whatsapp, botMsg);
     } else if (status === 'closed') {
-      const closeMsg = `Dear Client, your service ticket ${updatedTicket.ticket_number} has been officially CLOSED. Thank you for choosing Pro-Equip Support!`;
+      const closeMsg = `Dear Client, your service ticket ${updatedTicket.ticket_number} has been officially CLOSED. Thank you for choosing SEMCORP Support!`;
       const botMsg = await db.addWhatsAppMessage({
         ticket_id: updatedTicket.id,
         client_whatsapp: updatedTicket.client_whatsapp,
