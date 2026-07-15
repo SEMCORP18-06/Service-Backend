@@ -130,7 +130,7 @@ export default function ClientDashboardView() {
           <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', marginBottom: '20px' }}>
             <ClipboardList size={36} />
           </div>
-          <h2 style={{ marginBottom: '8px' }}>Client Support Portal</h2>
+          <h2 style={{ marginBottom: '8px' }}>SEMCORP Client Support Portal</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px' }}>
             Enter your registered WhatsApp number to track all past and current tickets, check schedules, and chat with engineers.
           </p>

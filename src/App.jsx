@@ -10,26 +10,26 @@ import { Wrench, Shield, Search, FileText, LogOut, User } from 'lucide-react';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState(() => {
-    const saved = localStorage.getItem('proequip_tab');
+    const saved = localStorage.getItem('semcorp_tab');
     return saved || 'ticket-gen';
   });
   const [loggedInUser, setLoggedInUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('proequip_user');
+      const saved = localStorage.getItem('semcorp_user');
       return saved ? JSON.parse(saved) : null;
     } catch { return null; }
   });
 
   // Persist tab and user to localStorage on change
   useEffect(() => {
-    localStorage.setItem('proequip_tab', currentTab);
+    localStorage.setItem('semcorp_tab', currentTab);
   }, [currentTab]);
 
   useEffect(() => {
     if (loggedInUser) {
-      localStorage.setItem('proequip_user', JSON.stringify(loggedInUser));
+      localStorage.setItem('semcorp_user', JSON.stringify(loggedInUser));
     } else {
-      localStorage.removeItem('proequip_user');
+      localStorage.removeItem('semcorp_user');
     }
   }, [loggedInUser]);
 
@@ -39,8 +39,8 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('proequip_user');
-    localStorage.removeItem('proequip_tab');
+    localStorage.removeItem('semcorp_user');
+    localStorage.removeItem('semcorp_tab');
     setLoggedInUser(null);
     setCurrentTab('staff');
   };
@@ -64,23 +64,22 @@ export default function App() {
       }}>
         
         {/* Logo and Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setCurrentTab('ticket-gen')}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setCurrentTab('ticket-gen')}>
           <div style={{
-            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-            color: 'white',
-            width: '40px',
-            height: '40px',
-            borderRadius: '12px',
+            background: '#ffffff',
+            padding: '4px 8px',
+            borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-sm)'
           }}>
-            <Wrench size={22} />
+            <img src="/semco_logo.png" alt="SEMCO Logo" style={{ height: '32px', objectFit: 'contain' }} />
           </div>
           <div>
-            <h1 style={{ fontSize: '18px', lineHeight: 1.1, fontWeight: 800 }}>PRO-EQUIP</h1>
-            <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Service Portal</span>
+            <h1 style={{ fontSize: '18px', lineHeight: 1.1, fontWeight: 800 }}>SEMCORP</h1>
+            <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Process & Vacuum Systems</span>
           </div>
         </div>
 
@@ -167,7 +166,7 @@ export default function App() {
         borderTop: '1px solid var(--border-color)',
         backgroundColor: 'var(--bg-secondary)'
       }}>
-        © 2026 Process Equipment Service Management Portal & WhatsApp Chatbot. All rights reserved.
+        © 2026 SEMCO Groups. All rights reserved.
       </footer>
 
       {/* Floating Interactive WhatsApp Simulator Widget */}

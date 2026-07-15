@@ -3,19 +3,34 @@ import { Lock, Mail, ShieldAlert, User, Phone, Briefcase } from 'lucide-react';
 
 export default function LoginView({ onLogin }) {
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [email, setEmail] = useState('manager@semcogroups.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   
   // Signup State
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
-  const [signupRole, setSignupRole] = useState('manager');
+  const [signupRole, setSignupRole] = useState('senior_manager');
   const [signupPhone, setSignupPhone] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [emailDomainError, setEmailDomainError] = useState('');
+  const [signupEmailDomainError, setSignupEmailDomainError] = useState('');
+
+  const validateEmailDomain = (value) => {
+    if (value.includes('@')) {
+      const domain = value.split('@')[1];
+      if (domain && domain.length > 0 && !domain.toLowerCase().startsWith('semcogroups.com'.substring(0, domain.length))) {
+        return 'Only @semcogroups.com emails are allowed.';
+      }
+      if (domain && domain.length >= 'semcogroups.com'.length && domain.toLowerCase() !== 'semcogroups.com') {
+        return 'Only @semcogroups.com emails are allowed.';
+      }
+    }
+    return '';
+  };
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -120,17 +135,18 @@ export default function LoginView({ onLogin }) {
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{
             display: 'inline-flex',
-            padding: '16px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--primary-light)',
-            color: 'var(--primary)',
+            padding: '8px 16px',
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-sm)',
             marginBottom: '16px'
           }}>
-            <Lock size={32} />
+            <img src="/semco_logo.png" alt="SEMCO Logo" style={{ height: '48px', objectFit: 'contain' }} />
           </div>
-          <h2>{isLoginMode ? 'Staff Portal Login' : 'Create Staff Account'}</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-            {isLoginMode ? 'Access restricted to Managers & Engineers' : 'Join as a Service Manager or Field Engineer'}
+          <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{isLoginMode ? 'Staff Portal Login' : 'Create Staff Account'}</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            SEMCORP Process & Vacuum Systems Pvt. Ltd.
           </p>
         </div>
 
@@ -175,10 +191,18 @@ export default function LoginView({ onLogin }) {
                   id="login-email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEmail(val);
+                    setEmailDomainError(validateEmailDomain(val));
+                  }}
                   placeholder="e.g. name@semcogroups.com"
                   required
+                  style={emailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
                 />
+                {emailDomainError && (
+                  <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{emailDomainError}</p>
+                )}
               </div>
 
               <div>
@@ -213,10 +237,18 @@ export default function LoginView({ onLogin }) {
                   id="signup-email"
                   type="email"
                   value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSignupEmail(val);
+                    setSignupEmailDomainError(validateEmailDomain(val));
+                  }}
                   placeholder="e.g. name@semcogroups.com"
                   required
+                  style={signupEmailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
                 />
+                {signupEmailDomainError && (
+                  <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{signupEmailDomainError}</p>
+                )}
               </div>
 
               <div>
@@ -240,6 +272,7 @@ export default function LoginView({ onLogin }) {
                     onChange={(e) => setSignupRole(e.target.value)}
                     style={{ padding: '10px 12px' }}
                   >
+                    <option value="senior_manager">Service Officer</option>
                     <option value="manager">Service Manager</option>
                     <option value="engineer">Field Engineer</option>
                   </select>
@@ -280,13 +313,6 @@ export default function LoginView({ onLogin }) {
           </button>
         </div>
 
-        {isLoginMode && (
-          <div style={{ marginTop: '24px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px', fontSize: '11px', color: 'var(--text-secondary)' }}>
-            <div style={{ fontWeight: 600, marginBottom: '4px' }}>Demo Credentials:</div>
-            <div>• Manager: <strong>manager@semcogroups.com</strong> / password</div>
-            <div>• Engineer: <strong>engineer1@semcogroups.com</strong> / password</div>
-          </div>
-        )}
       </div>
     </div>
   );

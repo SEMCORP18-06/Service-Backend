@@ -18,16 +18,73 @@ export default function TicketGenView() {
   const [createdTicket, setCreatedTicket] = useState(null);
   const [error, setError] = useState('');
 
+  const getSuggestionsList = (val) => {
+    const query = val.trim().toLowerCase();
+    if (!query) return [];
+
+    const queryTokens = query.split(/\s+/).filter(Boolean);
+    
+    const scored = companies.map(c => {
+      const nameLower = c.name.toLowerCase();
+      let score = 0;
+
+      // Clean name of common suffixes
+      const cleanName = nameLower
+        .replace(/\bltd\b|\blimited\b|\bpvt\b|\bprivate\b/g, '')
+        .trim();
+
+      // 1. Exact match (cleaned)
+      if (cleanName === query) {
+        score = 100;
+      }
+      // 2. Starts with entire query
+      else if (nameLower.startsWith(query)) {
+        score = 80;
+      }
+      // 3. Word starts with query (e.g. "Industries" starts with "ind" in "Aarti Industries")
+      else if (nameLower.split(/\s+/).some(word => word.startsWith(query))) {
+        score = 60;
+      }
+      // 4. Contains entire query phrase
+      else if (nameLower.includes(query)) {
+        score = 40;
+      }
+      // 5. Multi-token match (all query tokens exist in company name)
+      else {
+        const matchesAllTokens = queryTokens.every(token => 
+          nameLower.split(/\s+/).some(word => word.startsWith(token) || word.includes(token))
+        );
+        if (matchesAllTokens) {
+          if (queryTokens[0] && nameLower.startsWith(queryTokens[0])) {
+            score = 30;
+          } else {
+            score = 20;
+          }
+        }
+      }
+
+      return { company: c, score };
+    });
+
+    return scored
+      .filter(item => item.score > 0)
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return a.company.name.localeCompare(b.company.name);
+      })
+      .map(item => item.company)
+      .slice(0, 15);
+  };
+
   const handleCompanyInputChange = (e) => {
     const val = e.target.value;
     setCompanyInput(val);
     setSelectedCompanyId(val);
 
     if (val.trim().length > 0) {
-      const filtered = companies.filter(c =>
-        c.name.toLowerCase().includes(val.toLowerCase())
-      );
-      setSuggestions(filtered.slice(0, 10));
+      setSuggestions(getSuggestionsList(val));
       setShowSuggestions(true);
     } else {
       setSuggestions([]);
@@ -148,7 +205,7 @@ export default function TicketGenView() {
             </div>
             <div>
               <h2 style={{ fontSize: '20px' }}>Raise Complaint Ticket</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Process Equipment Division Support</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>SEMCORP Process & Vacuum Systems Support</p>
             </div>
           </div>
 
@@ -169,10 +226,7 @@ export default function TicketGenView() {
                 onChange={handleCompanyInputChange}
                 onFocus={() => {
                   if (companyInput.trim().length > 0) {
-                    const filtered = companies.filter(c =>
-                      c.name.toLowerCase().includes(companyInput.toLowerCase())
-                    );
-                    setSuggestions(filtered.slice(0, 10));
+                    setSuggestions(getSuggestionsList(companyInput));
                   }
                   setShowSuggestions(true);
                 }}

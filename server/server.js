@@ -399,7 +399,7 @@ app.post('/api/auth/signup', async (req, res) => {
     return res.status(400).json({ error: "Access denied. Only @semcogroups.com emails are authorized." });
   }
 
-  if (role !== 'manager' && role !== 'engineer') {
+  if (role !== 'senior_manager' && role !== 'manager' && role !== 'engineer') {
     return res.status(400).json({ error: "Invalid registration role." });
   }
 
