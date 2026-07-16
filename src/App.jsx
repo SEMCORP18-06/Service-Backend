@@ -134,8 +134,9 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
           <div className="desktop-auth" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ThemeToggle />
             {loggedInUser && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px', borderRight: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '12px', borderLeft: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
                   <User size={16} />
                 </div>
@@ -153,7 +154,6 @@ export default function App() {
                 </button>
               </div>
             )}
-            <ThemeToggle />
           </div>
 
           {/* Theme Toggle for mobile - only rendered/visible when desktop auth is hidden */}
