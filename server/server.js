@@ -436,7 +436,7 @@ app.get('/api/auth/verify', async (req, res) => {
       return res.status(400).send("Invalid or expired verification token.");
     }
 
-    res.redirect('http://localhost:5173/?verified=true');
+    res.redirect('https://service.semcogroups.com/?verified=true');
   } catch (err) {
     console.error(err);
     res.status(500).send("Verification failed.");
