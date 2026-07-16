@@ -288,9 +288,8 @@ export default function ClientDashboardView() {
                           left: '125px',
                           width: (() => {
                             const s = ticket.status;
-                            if (s === 'open') return '0%';
-                            if (s === 'assigned') return '33%';
-                            if (s === 'in_progress') return '66%';
+                            if (s === 'open' || s === 'assigned') return '0%';
+                            if (s === 'in_progress') return '50%';
                             if (s === 'resolved' || s === 'closed') return '100%';
                             return '0%';
                           })(),
@@ -304,19 +303,17 @@ export default function ClientDashboardView() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
                           {[
                             { label: 'Service Requested', key: 'open' },
-                            { label: 'Engineer Assigned', key: 'assigned' },
                             { label: 'Engineer at site', key: 'in_progress' },
                             { label: 'Issue resolved', key: 'resolved' }
                           ].map((node, index) => {
                             const isCompleted = (() => {
                               const s = ticket.status;
                               if (node.key === 'open') return true;
-                              if (node.key === 'assigned') return s !== 'open';
                               if (node.key === 'in_progress') return s === 'in_progress' || s === 'resolved' || s === 'closed';
                               if (node.key === 'resolved') return s === 'resolved' || s === 'closed';
                               return false;
                             })();
-                            const isCurrent = ticket.status === node.key;
+                            const isCurrent = ticket.status === node.key || (node.key === 'open' && ticket.status === 'assigned');
 
                             return (
                               <div key={node.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '130px', textAlign: 'center' }}>
@@ -360,7 +357,6 @@ export default function ClientDashboardView() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                           {[
                             ticket.created_at,
-                            ticket.eta_assigned || ticket.scheduled_slot,
                             ticket.eta_in_progress,
                             ticket.eta_resolved
                           ].map((date, idx) => (
@@ -381,7 +377,6 @@ export default function ClientDashboardView() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                           {[
                             ticket.created_at,
-                            ticket.assigned_at,
                             ticket.in_progress_at,
                             ticket.resolved_at
                           ].map((date, idx) => (

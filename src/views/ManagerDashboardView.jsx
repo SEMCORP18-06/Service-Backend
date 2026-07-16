@@ -810,14 +810,10 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                           <input type="text" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
                         </div>
                         <div>
-                          <label style={{ fontSize: '11px' }}>Tentative ETA: Assigned</label>
-                          <input type="date" value={editEtaAssigned} onChange={(e) => setEditEtaAssigned(e.target.value)} />
-                        </div>
-                        <div>
                           <label style={{ fontSize: '11px' }}>Tentative ETA: In Progress</label>
                           <input type="date" value={editEtaInProgress} onChange={(e) => setEditEtaInProgress(e.target.value)} />
                         </div>
-                        <div style={{ gridColumn: 'span 2' }}>
+                        <div>
                           <label style={{ fontSize: '11px' }}>Tentative ETA: Resolved</label>
                           <input type="date" value={editEtaResolved} onChange={(e) => setEditEtaResolved(e.target.value)} />
                         </div>
@@ -890,8 +886,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
 
                       <div style={{ padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '10px' }}>Tentative status completion timeframes</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                          <div>🕒 Assigned:<br/><strong style={{ color: 'var(--primary)' }}>{selectedTicket.eta_assigned ? new Date(selectedTicket.eta_assigned).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</strong></div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div>🕒 In Progress:<br/><strong style={{ color: '#10b981' }}>{selectedTicket.eta_in_progress ? new Date(selectedTicket.eta_in_progress).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</strong></div>
                           <div>🕒 Resolved:<br/><strong style={{ color: '#f59e0b' }}>{selectedTicket.eta_resolved ? new Date(selectedTicket.eta_resolved).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</strong></div>
                         </div>
