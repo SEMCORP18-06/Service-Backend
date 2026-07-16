@@ -131,7 +131,7 @@ export default function App() {
         </nav>
 
         {/* Global Controls & Auth State */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
           <div className="desktop-auth">
             {loggedInUser && (
@@ -153,9 +153,10 @@ export default function App() {
                 </button>
               </div>
             )}
-
-            <ThemeToggle />
           </div>
+
+          {/* Theme Toggle is always visible and positioned next to menu button on mobile */}
+          <ThemeToggle />
 
           {/* Hamburger button for mobile */}
           <button
@@ -176,38 +177,35 @@ export default function App() {
       <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'active' : ''}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
           <span style={{ fontWeight: 700, fontSize: '16px' }}>Menu</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ThemeToggle />
-            {loggedInUser && (
-              <button
-                onClick={handleLogout}
-                className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '12px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '4px', minHeight: '32px' }}
-                title="Log Out"
-              >
-                <LogOut size={14} /> Log Out
-              </button>
-            )}
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="btn btn-secondary"
-              style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}
-              aria-label="Close menu"
-            >
-              ✕
-            </button>
-          </div>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="btn btn-secondary"
+            style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
         </div>
 
         {loggedInUser && (
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
-              <User size={16} />
+          <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
+                <User size={16} />
+              </div>
+              <div style={{ fontSize: '14px', lineHeight: 1.2, flex: 1 }}>
+                <div style={{ fontWeight: 600 }}>{loggedInUser.name}</div>
+                <div style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize', fontSize: '12px' }}>{loggedInUser.role}</div>
+              </div>
             </div>
-            <div style={{ fontSize: '12px', lineHeight: 1.2, flex: 1 }}>
-              <div style={{ fontWeight: 600 }}>{loggedInUser.name}</div>
-              <div style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{loggedInUser.role}</div>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="btn btn-secondary"
+              style={{ width: '100%', padding: '8px 12px', fontSize: '13px', color: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minHeight: '40px' }}
+              title="Log Out"
+            >
+              <LogOut size={14} /> Log Out
+            </button>
           </div>
         )}
 
