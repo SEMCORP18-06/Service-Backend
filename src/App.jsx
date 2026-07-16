@@ -177,6 +177,7 @@ export default function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
           <span style={{ fontWeight: 700, fontSize: '16px' }}>Menu</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ThemeToggle />
             {loggedInUser && (
               <button
                 onClick={handleLogout}
@@ -229,10 +230,6 @@ export default function App() {
           >
             <Shield size={18} /> Staff Workspace
           </button>
-        </div>
-
-        <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
-          <ThemeToggle />
         </div>
       </div>
 
