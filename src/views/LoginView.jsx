@@ -12,7 +12,6 @@ export default function LoginView({ onLogin }) {
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
-  const [signupRole, setSignupRole] = useState('senior_manager');
   const [signupPhone, setSignupPhone] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -100,7 +99,6 @@ export default function LoginView({ onLogin }) {
             name: signupName,
             email: signupEmail,
             password: signupPassword,
-            role: signupRole,
             phone_number: signupPhone
           })
         });
@@ -271,33 +269,17 @@ export default function LoginView({ onLogin }) {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label htmlFor="signup-role" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={14} /> Portal Role</label>
-                  <select
-                    id="signup-role"
-                    value={signupRole}
-                    onChange={(e) => setSignupRole(e.target.value)}
-                    style={{ padding: '10px 12px' }}
-                  >
-                    <option value="senior_manager">Service Officer</option>
-                    <option value="manager">Service Manager</option>
-                    <option value="engineer">Field Engineer</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="signup-password">Password</label>
-                  <input
-                    id="signup-password"
-                    type="password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    autoComplete="new-password"
-                  />
-                </div>
+              <div>
+                <label htmlFor="signup-password">Password</label>
+                <input
+                  id="signup-password"
+                  type="password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                />
               </div>
             </>
           )}

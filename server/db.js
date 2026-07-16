@@ -22,7 +22,7 @@ class MongoDBWrapper {
     return await User.findOne({ email: new RegExp('^' + email.trim() + '$', 'i') }).lean();
   }
 
-  async createUser({ name, email, password, role, phone_number, verification_token }) {
+  async createUser({ name, email, password, role = 'none', phone_number, verification_token }) {
     const lastUser = await User.findOne().sort({ id: -1 });
     const nextId = lastUser ? lastUser.id + 1 : 1;
 
@@ -56,6 +56,18 @@ class MongoDBWrapper {
   async getUserById(id) {
     if (!id) return null;
     return await User.findOne({ id: parseInt(id) }).lean();
+  }
+
+  async getUsers() {
+    return await User.find({}).lean();
+  }
+
+  async updateUserRole(id, role) {
+    const user = await User.findOne({ id: parseInt(id) });
+    if (!user) return null;
+    user.role = role;
+    await user.save();
+    return user.toObject();
   }
 
   async getEngineers() {

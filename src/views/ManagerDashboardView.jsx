@@ -4,12 +4,17 @@ import { socket } from '../socket';
 import { 
   Building, User, Mail, Phone, Calendar, Clock, 
   MessageSquare, Send, CheckCircle2, AlertCircle, 
-  PlusCircle, RefreshCw, Layers, TrendingUp, BarChart3
+  PlusCircle, RefreshCw, Layers, TrendingUp, BarChart3, Users
 } from 'lucide-react';
 
 export default function ManagerDashboardView({ userRole = 'manager' }) {
   const { isMobile, isTablet } = useResponsive();
   const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
+  
+  // User Management State
+  const [users, setUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
+  const [userLoading, setUserLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('tickets'); // 'tickets' or 'raise'
   const [tickets, setTickets] = useState([]);
   const [filteredTickets, setFilteredTickets] = useState([]);
@@ -158,7 +163,45 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
     fetchEngineers();
     fetchCompanies();
     fetchProducts();
+    if (userRole === 'senior_manager') {
+      fetchUsers();
+    }
   }, []);
+
+  const fetchUsers = async () => {
+    setUserLoading(true);
+    try {
+      const res = await fetch('https://service-backend-jhq0.onrender.com/api/users');
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const handleUpdateUserRole = async (userId, newRole) => {
+    try {
+      const res = await fetch(`https://service-backend-jhq0.onrender.com/api/users/${userId}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update role");
+      }
+      setSuccessMsg("User role updated successfully.");
+      setError("");
+      fetchUsers();
+      fetchEngineers();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update user role.");
+    }
+  };
 
   const fetchTickets = async () => {
     try {
@@ -552,13 +595,22 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
             <PlusCircle size={14} /> Raise Ticket
           </button>
           {userRole === 'senior_manager' && (
-            <button 
-              className={`btn ${activeTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => { setActiveTab('analytics'); setError(''); setSuccessMsg(''); }}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: isMobile ? '8px 12px' : '12px 24px', fontSize: isMobile ? '12px' : '14px' }}
-            >
-              <TrendingUp size={14} /> Analytics
-            </button>
+            <>
+              <button 
+                className={`btn ${activeTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => { setActiveTab('analytics'); setError(''); setSuccessMsg(''); }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: isMobile ? '8px 12px' : '12px 24px', fontSize: isMobile ? '12px' : '14px' }}
+              >
+                <TrendingUp size={14} /> Analytics
+              </button>
+              <button 
+                className={`btn ${activeTab === 'manage-users' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => { setActiveTab('manage-users'); setError(''); setSuccessMsg(''); fetchUsers(); }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: isMobile ? '8px 12px' : '12px 24px', fontSize: isMobile ? '12px' : '14px' }}
+              >
+                <Users size={14} /> Manage Users
+              </button>
+            </>
           )}
           <button 
             onClick={fetchTickets}
@@ -1479,6 +1531,98 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'manage-users' && userRole === 'senior_manager' && (
+        <div className="card-glass animate-fade-in" style={{ padding: isMobile ? '16px' : '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <h2 style={{ fontSize: isMobile ? '18px' : '20px', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}><Users style={{ color: 'var(--primary)' }} /> User Directory & Role Assignment</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Review registered staff, check verification status, and assign system access permissions.</p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '10px' }}>
+            <input 
+              type="text" 
+              placeholder="Search users by name or email..." 
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '14px' }}
+            />
+            <button className="btn btn-secondary" onClick={fetchUsers} disabled={userLoading} style={{ minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <RefreshCw size={14} className={userLoading ? 'animate-spin' : ''} />
+            </button>
+          </div>
+
+          {userLoading && <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>Loading registered users...</div>}
+
+          {!userLoading && (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
+                    <th style={{ padding: '12px 10px' }}>User Name</th>
+                    <th style={{ padding: '12px 10px' }}>Email Address</th>
+                    <th style={{ padding: '12px 10px' }}>Verification Status</th>
+                    <th style={{ padding: '12px 10px' }}>Assigned System Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.filter(u => {
+                    const q = userSearch.toLowerCase().trim();
+                    return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+                  }).map(u => (
+                    <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
+                      <td style={{ padding: '14px 10px', fontWeight: 600 }}>{u.name}</td>
+                      <td style={{ padding: '14px 10px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{u.email}</td>
+                      <td style={{ padding: '14px 10px' }}>
+                        <span style={{ 
+                          padding: '4px 10px', 
+                          borderRadius: '12px', 
+                          fontSize: '11px', 
+                          fontWeight: 600,
+                          backgroundColor: u.is_verified ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
+                          color: u.is_verified ? '#10b981' : '#f59e0b' 
+                        }}>
+                          {u.is_verified ? 'Verified' : 'Pending Verification'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 10px' }}>
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleUpdateUserRole(u.id, e.target.value)}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            outline: 'none',
+                            fontWeight: u.role === 'none' ? 'normal' : '600'
+                          }}
+                        >
+                          <option value="none">Suspended / No Role</option>
+                          <option value="senior_manager">Service Officer (Senior Manager)</option>
+                          <option value="manager">Service Manager (Manager)</option>
+                          <option value="engineer">Field Engineer</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.filter(u => {
+                    const q = userSearch.toLowerCase().trim();
+                    return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+                  }).length === 0 && (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: 'var(--text-tertiary)' }}>No users found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

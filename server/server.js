@@ -371,6 +371,10 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: "Your account is not verified yet. Please check your email for the verification link." });
     }
 
+    if (!user.role || user.role === 'none') {
+      return res.status(403).json({ error: "Your account is verified, but a Service Officer has not assigned you a role yet. Please contact your Service Officer." });
+    }
+
     res.json({
       user: {
         id: user.id,
@@ -389,18 +393,14 @@ app.post('/api/auth/login', async (req, res) => {
 
 // 1b. Auth Signup
 app.post('/api/auth/signup', async (req, res) => {
-  const { name, email, password, role, phone_number } = req.body;
+  const { name, email, password, phone_number } = req.body;
 
-  if (!name || !email || !password || !role || !phone_number) {
+  if (!name || !email || !password || !phone_number) {
     return res.status(400).json({ error: "All signup fields are required." });
   }
 
   if (!email.toLowerCase().endsWith('@semcogroups.com')) {
     return res.status(400).json({ error: "Access denied. Only @semcogroups.com emails are authorized." });
-  }
-
-  if (role !== 'senior_manager' && role !== 'manager' && role !== 'engineer') {
-    return res.status(400).json({ error: "Invalid registration role." });
   }
 
   try {
@@ -410,7 +410,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 
     const verification_token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const newUser = await db.createUser({ name, email, password, role, phone_number, verification_token });
+    const newUser = await db.createUser({ name, email, password, role: 'none', phone_number, verification_token });
     
     sendVerificationEmail(newUser);
 
@@ -440,6 +440,38 @@ app.get('/api/auth/verify', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Verification failed.");
+  }
+});
+
+// 1d. Users List (Service Officer only)
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await db.getUsers();
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to retrieve users" });
+  }
+});
+
+// 1e. Update User Role (Service Officer only)
+app.put('/api/users/:id/role', async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  if (role !== 'senior_manager' && role !== 'manager' && role !== 'engineer' && role !== 'none') {
+    return res.status(400).json({ error: "Invalid role value." });
+  }
+
+  try {
+    const updatedUser = await db.updateUserRole(id, role);
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update user role." });
   }
 });
 
