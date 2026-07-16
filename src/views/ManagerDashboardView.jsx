@@ -4,7 +4,7 @@ import { socket } from '../socket';
 import { 
   Building, User, Mail, Phone, Calendar, Clock, 
   MessageSquare, Send, CheckCircle2, AlertCircle, 
-  PlusCircle, RefreshCw, Layers, TrendingUp, BarChart3, Users
+  PlusCircle, RefreshCw, Layers, TrendingUp, BarChart3, Users, Trash2
 } from 'lucide-react';
 
 export default function ManagerDashboardView({ userRole = 'manager' }) {
@@ -200,6 +200,28 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
     } catch (err) {
       console.error(err);
       setError("Failed to update user role.");
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to delete user "${userName}"?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`https://service-backend-jhq0.onrender.com/api/users/${userId}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete user");
+      }
+      setSuccessMsg(`User "${userName}" deleted successfully.`);
+      setError("");
+      fetchUsers();
+      fetchEngineers();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete user.");
     }
   };
 
@@ -1565,6 +1587,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                     <th style={{ padding: '12px 10px' }}>Email Address</th>
                     <th style={{ padding: '12px 10px' }}>Verification Status</th>
                     <th style={{ padding: '12px 10px' }}>Assigned System Role</th>
+                    <th style={{ padding: '12px 10px', textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1609,6 +1632,27 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                           <option value="engineer">Field Engineer</option>
                         </select>
                       </td>
+                      <td style={{ padding: '14px 10px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleDeleteUser(u.id, u.name)}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: '6px 10px',
+                            minHeight: '32px',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            color: 'var(--danger)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            cursor: 'pointer'
+                          }}
+                          title="Delete User"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {users.filter(u => {
@@ -1616,7 +1660,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                     return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
                   }).length === 0 && (
                     <tr>
-                      <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: 'var(--text-tertiary)' }}>No users found.</td>
+                      <td colSpan="5" style={{ padding: '30px', textAlign: 'center', color: 'var(--text-tertiary)' }}>No users found.</td>
                     </tr>
                   )}
                 </tbody>

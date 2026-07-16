@@ -70,6 +70,10 @@ class MongoDBWrapper {
     return user.toObject();
   }
 
+  async deleteUser(id) {
+    return await User.deleteOne({ id: parseInt(id) });
+  }
+
   async getEngineers() {
     return await User.find({ role: 'engineer' }).lean();
   }

@@ -475,6 +475,21 @@ app.put('/api/users/:id/role', async (req, res) => {
   }
 });
 
+// 1f. Delete User (Service Officer only)
+app.delete('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.deleteUser(id);
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    res.json({ message: "User deleted successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete user." });
+  }
+});
+
 // 2. Companies & Products
 app.get('/api/companies', async (req, res) => {
   try {
