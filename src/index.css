@@ -313,3 +313,243 @@ label {
 .sheet-option:hover {
   background-color: var(--bg-tertiary) !important;
 }
+
+/* ==============================
+   RESPONSIVE DESIGN SYSTEM
+   ============================== */
+
+/* Hamburger Menu Button */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background-color var(--transition-fast);
+  line-height: 1;
+}
+
+.mobile-menu-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Mobile Navigation Overlay */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  backdrop-filter: blur(2px);
+}
+
+.mobile-nav-overlay.active {
+  display: block;
+}
+
+/* Mobile Navigation Drawer */
+.mobile-nav-drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 280px;
+  max-width: 80vw;
+  height: 100vh;
+  background: var(--bg-secondary);
+  z-index: 999;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.mobile-nav-drawer.active {
+  display: flex;
+  transform: translateX(0);
+}
+
+.mobile-nav-drawer .drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.mobile-nav-drawer .drawer-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.mobile-nav-drawer .drawer-close:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.mobile-nav-drawer .drawer-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all var(--transition-fast);
+  font-family: var(--font-body);
+}
+
+.mobile-nav-drawer .drawer-nav-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.mobile-nav-drawer .drawer-nav-item.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.mobile-nav-drawer .drawer-user-info {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* Mobile Back Button */
+.mobile-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: all var(--transition-fast);
+  font-family: var(--font-heading);
+}
+
+.mobile-back-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* ==============================
+   MEDIA QUERIES
+   ============================== */
+
+/* Tablet: 769px – 1024px */
+@media (max-width: 1024px) {
+  .card-glass {
+    border-radius: 12px;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile: <= 768px */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .desktop-auth {
+    display: none !important;
+  }
+
+  .card-glass {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  input, select, textarea {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .timeline {
+    padding-left: 18px;
+  }
+
+  .timeline-item {
+    margin-bottom: 14px;
+  }
+}
+
+/* Small Mobile: <= 480px */
+@media (max-width: 480px) {
+  .card-glass {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  input, select, textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  label {
+    font-size: 12px;
+  }
+
+  h1 { font-size: 20px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 15px; }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

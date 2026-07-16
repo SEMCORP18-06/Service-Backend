@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useResponsive from '../hooks/useResponsive.js';
 import { socket } from '../socket';
 import { 
   Building, User, Mail, Phone, Calendar, Clock, 
@@ -7,6 +8,8 @@ import {
 } from 'lucide-react';
 
 export default function ManagerDashboardView({ userRole = 'manager' }) {
+  const { isMobile, isTablet } = useResponsive();
+  const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
   const [activeTab, setActiveTab] = useState('tickets'); // 'tickets' or 'raise'
   const [tickets, setTickets] = useState([]);
   const [filteredTickets, setFilteredTickets] = useState([]);
@@ -247,6 +250,10 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
 
     // Fetch WhatsApp Messages
     fetchWhatsAppHistory(cleanNum);
+
+    if (isMobile) {
+      setShowDetailOnMobile(true);
+    }
   };
 
   const fetchLogs = async (ticketId) => {
@@ -515,45 +522,46 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: isMobile ? '12px 0' : '20px 0' }}>
       
       {/* Header Controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? '12px' : '20px' }}>
         <div>
-          <h1 style={{ fontSize: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><Layers size={24} style={{ color: 'var(--primary)' }} /> Service Manager Panel</h1>
+          <h1 style={{ fontSize: isMobile ? '20px' : '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><Layers size={isMobile ? 20 : 24} style={{ color: 'var(--primary)' }} /> Service Manager Panel</h1>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Assign tasks, dispatch engineers, and communicate directly via WhatsApp.</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: isMobile ? '6px' : '12px', flexWrap: 'wrap' }}>
           <button 
             className={`btn ${activeTab === 'tickets' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => { setActiveTab('tickets'); setError(''); setSuccessMsg(''); }}
+            style={{ padding: isMobile ? '8px 12px' : '12px 24px', fontSize: isMobile ? '12px' : '14px' }}
           >
             Ticket Workspace
           </button>
           <button 
             className={`btn ${activeTab === 'raise' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => { setActiveTab('raise'); setError(''); setSuccessMsg(''); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: isMobile ? '8px 12px' : '12px 24px', fontSize: isMobile ? '12px' : '14px' }}
           >
-            <PlusCircle size={16} /> Manually Raise Ticket
+            <PlusCircle size={14} /> Raise Ticket
           </button>
           {userRole === 'senior_manager' && (
             <button 
               className={`btn ${activeTab === 'analytics' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => { setActiveTab('analytics'); setError(''); setSuccessMsg(''); }}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: isMobile ? '8px 12px' : '12px 24px', fontSize: isMobile ? '12px' : '14px' }}
             >
-              <TrendingUp size={16} /> Analytics & DB Stats
+              <TrendingUp size={14} /> Analytics
             </button>
           )}
           <button 
             onClick={fetchTickets}
             className="btn btn-secondary"
-            style={{ padding: '12px' }}
+            style={{ padding: isMobile ? '8px 12px' : '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             title="Reload Tickets"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={14} />
           </button>
         </div>
       </div>
@@ -572,7 +580,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
 
       {activeTab === 'raise' && (
         /* Manual Ticket Raising Form */
-        <div className="card-glass animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto', padding: '32px', width: '100%' }}>
+        <div className="card-glass animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto', padding: isMobile ? '20px' : '32px', width: '100%' }}>
           <h2 style={{ marginBottom: '20px', fontSize: '18px' }}>Log a Direct Client Complaint</h2>
           <form onSubmit={handleManualRaise} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ position: 'relative' }}>
@@ -712,10 +720,11 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
 
       {activeTab === 'tickets' && (
         /* Main Tickets Workspace */
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '20px', minHeight: '600px' }} className="animate-fade-in">
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (isTablet ? '280px 1fr' : '320px 1fr'), gap: isMobile ? '16px' : '20px', minHeight: '600px' }} className="animate-fade-in">
           
           {/* Ticket Listing Column */}
-          <div className="card-glass" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
+          {(!isMobile || !showDetailOnMobile) && (
+          <div className="card-glass" style={{ padding: isMobile ? '14px' : '20px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
             <div>
               <h3 style={{ fontSize: '15px', marginBottom: '8px' }}>Filters</h3>
               <select 
@@ -778,21 +787,25 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
               )}
             </div>
           </div>
-
+          )}
+          
           {/* Ticket Workspace Column */}
-          {selectedTicket ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+          {selectedTicket && (!isMobile || showDetailOnMobile) ? (
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr', gap: isMobile ? '16px' : '20px' }}>
               
               {/* Workspace Left: Ticket Info, Logs, Assignment */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {isMobile && (
+                  <button className="mobile-back-btn" onClick={() => setShowDetailOnMobile(false)}>← Back to List</button>
+                )}
                 
                 {/* Details Card */}
-                <div className="card-glass" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div className="card-glass" style={{ padding: isMobile ? '14px' : '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   {isEditing ? (
                     <form onSubmit={handleSaveChanges} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <h3 style={{ fontSize: '15px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>Edit Ticket Details</h3>
                       
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
                         <div>
                           <label style={{ fontSize: '11px' }}>Product Name</label>
                           <input type="text" value={editProductName} onChange={(e) => setEditProductName(e.target.value)} required />
@@ -805,7 +818,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                           <label style={{ fontSize: '11px' }}>Client Email</label>
                           <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} required />
                         </div>
-                        <div style={{ gridColumn: 'span 2' }}>
+                        <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
                           <label style={{ fontSize: '11px' }}>Client WhatsApp Number</label>
                           <input type="text" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required />
                         </div>
@@ -876,17 +889,17 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                         </div>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
+                       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px', fontSize: '13px' }}>
                         <div>🏢 Company: <strong>{selectedTicket.company_name}</strong></div>
                         <div>🔧 Product: <strong>{selectedTicket.product_name}</strong></div>
                         <div>🏷️ Specific Product No: <strong>{selectedTicket.serial_number || 'N/A'}</strong></div>
                         <div>📧 Email: <strong>{selectedTicket.client_email}</strong></div>
-                        <div style={{ gridColumn: 'span 2' }}>📱 WhatsApp: <strong>{selectedTicket.client_whatsapp}</strong></div>
+                        <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>📱 WhatsApp: <strong>{selectedTicket.client_whatsapp}</strong></div>
                       </div>
 
                       <div style={{ padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{ fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '10px' }}>Tentative status completion timeframes</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                           <div>🕒 In Progress:<br/><strong style={{ color: '#10b981' }}>{selectedTicket.eta_in_progress ? new Date(selectedTicket.eta_in_progress).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</strong></div>
                           <div>🕒 Resolved:<br/><strong style={{ color: '#f59e0b' }}>{selectedTicket.eta_resolved ? new Date(selectedTicket.eta_resolved).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</strong></div>
                         </div>
@@ -1045,7 +1058,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                   <h3 style={{ fontSize: '15px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} style={{ color: 'var(--accent)' }} /> Dispatch Engineer</h3>
                   
                   <form onSubmit={handleAssign} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                       <div>
                         <label htmlFor="assign-eng" style={{ fontSize: '12px' }}>Select Available Engineer</label>
                         <select 
@@ -1217,10 +1230,10 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
               </div>
 
             </div>
-          ) : (
-            <div className="card-glass" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
-              <AlertCircle size={40} style={{ marginBottom: '12px', color: 'var(--primary)' }} />
-              <h3>Select a ticket from the left workspace list to manage details.</h3>
+          ) : (!isMobile || !showDetailOnMobile) && (
+            <div className="card-glass" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '24px' : '40px', color: 'var(--text-tertiary)', flex: 1 }}>
+              <AlertCircle size={isMobile ? 32 : 40} style={{ marginBottom: '12px', color: 'var(--primary)' }} />
+              <h3 style={{ fontSize: isMobile ? '14px' : '16px', textAlign: 'center' }}>Select a ticket from the left workspace list to manage details.</h3>
             </div>
           )}
 
@@ -1229,13 +1242,13 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
 
       {activeTab === 'analytics' && (
         /* Analytics & DB Stats View */
-        <div className="card-glass animate-fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <div className="card-glass animate-fade-in" style={{ padding: isMobile ? '16px' : '32px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart3 style={{ color: 'var(--primary)' }} /> Database Metrics & Analytics</h2>
+            <h2 style={{ fontSize: isMobile ? '18px' : '20px', fontFamily: 'var(--font-heading)', display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart3 style={{ color: 'var(--primary)' }} /> Database Metrics & Analytics</h2>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Live system summary of ticket statuses and engineer workload distribution.</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '24px' }}>
             
             {/* Status Breakdown Card */}
             <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
@@ -1267,7 +1280,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
             </div>
 
             {/* General Database Summary Metrics */}
-            <div style={{ display: 'grid', gridTemplateRows: 'repeat(4, 1fr)', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr', gap: '12px' }}>
               <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>Total Registered Tickets</div>
@@ -1472,7 +1485,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>Service Cost (₹)</label>
                   <input 

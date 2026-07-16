@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useResponsive from './hooks/useResponsive.js';
 import ThemeToggle from './components/ThemeToggle';
 import WhatsAppSimulator from './components/WhatsAppSimulator';
 import TicketGenView from './views/TicketGenView';
@@ -9,6 +10,8 @@ import EngineerDashboardView from './views/EngineerDashboardView';
 import { Wrench, Shield, Search, FileText, LogOut, User } from 'lucide-react';
 
 export default function App() {
+  const { isMobile } = useResponsive();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState(() => {
     const saved = localStorage.getItem('semcorp_tab');
     return saved || 'ticket-gen';
@@ -33,6 +36,11 @@ export default function App() {
     }
   }, [loggedInUser]);
 
+  const handleTabChange = (tab) => {
+    setCurrentTab(tab);
+    setMobileMenuOpen(false);
+  };
+
   const handleLogin = (user) => {
     setLoggedInUser(user);
     setCurrentTab('staff');
@@ -52,7 +60,7 @@ export default function App() {
       <header style={{
         background: 'var(--bg-secondary)',
         borderBottom: '1px solid var(--border-color)',
-        padding: '16px 24px',
+        padding: isMobile ? '10px 16px' : '12px 24px',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -75,18 +83,18 @@ export default function App() {
             border: '1px solid var(--border-color)',
             boxShadow: 'var(--shadow-sm)'
           }}>
-            <img src="/semco_logo.png" alt="SEMCO Logo" style={{ height: '32px', objectFit: 'contain' }} />
+            <img src="/semco_logo.png" alt="SEMCO Logo" style={{ height: isMobile ? '28px' : '32px', objectFit: 'contain' }} />
           </div>
           <div>
-            <h1 style={{ fontSize: '18px', lineHeight: 1.1, fontWeight: 800 }}>SEMCORP</h1>
+            <h1 style={{ fontSize: isMobile ? '18px' : '22px', lineHeight: 1.1, fontWeight: 800 }}>SEMCORP</h1>
             <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Process & Vacuum Systems</span>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', gap: '8px' }}>
+        <nav className="desktop-nav" style={{ display: 'flex', gap: '8px' }}>
           <button
-            onClick={() => setCurrentTab('ticket-gen')}
+            onClick={() => handleTabChange('ticket-gen')}
             className={`btn ${currentTab === 'ticket-gen' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
@@ -94,7 +102,7 @@ export default function App() {
           </button>
           
           <button
-            onClick={() => setCurrentTab('client-dash')}
+            onClick={() => handleTabChange('client-dash')}
             className={`btn ${currentTab === 'client-dash' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
@@ -102,7 +110,7 @@ export default function App() {
           </button>
           
           <button
-            onClick={() => setCurrentTab('staff')}
+            onClick={() => handleTabChange('staff')}
             className={`btn ${currentTab === 'staff' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
@@ -113,16 +121,92 @@ export default function App() {
         {/* Global Controls & Auth State */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           
-          {loggedInUser && currentTab === 'staff' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px', borderRight: '1px solid var(--border-color)' }}>
+          <div className="desktop-auth">
+            {loggedInUser && currentTab === 'staff' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px', borderRight: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
+                  <User size={16} />
+                </div>
+                <div style={{ fontSize: '12px', lineHeight: 1.2 }}>
+                  <div style={{ fontWeight: 600 }}>{loggedInUser.name}</div>
+                  <div style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{loggedInUser.role}</div>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  title="Log Out"
+                >
+                  <LogOut size={14} style={{ color: 'var(--danger)' }} />
+                </button>
+              </div>
+            )}
+
+            <ThemeToggle />
+          </div>
+
+          {/* Hamburger button for mobile */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
+
+      </header>
+
+      {/* Mobile Navigation Drawer Overlay */}
+      <div className={`mobile-nav-overlay ${mobileMenuOpen ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+
+      {/* Mobile Navigation Drawer */}
+      <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'active' : ''}`}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
+          <span style={{ fontWeight: 700, fontSize: '16px' }}>Menu</span>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="btn btn-secondary"
+            style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+          <button
+            onClick={() => handleTabChange('ticket-gen')}
+            className={`drawer-nav-item ${currentTab === 'ticket-gen' ? 'active' : ''}`}
+          >
+            <FileText size={18} /> Register Complaint
+          </button>
+          <button
+            onClick={() => handleTabChange('client-dash')}
+            className={`drawer-nav-item ${currentTab === 'client-dash' ? 'active' : ''}`}
+          >
+            <Search size={18} /> Client Dashboard
+          </button>
+          <button
+            onClick={() => handleTabChange('staff')}
+            className={`drawer-nav-item ${currentTab === 'staff' ? 'active' : ''}`}
+          >
+            <Shield size={18} /> Staff Workspace
+          </button>
+        </div>
+
+        <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
+          <ThemeToggle />
+          {loggedInUser && (
+            <div className="drawer-user-info" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
                 <User size={16} />
               </div>
-              <div style={{ fontSize: '12px', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '12px', lineHeight: 1.2, flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>{loggedInUser.name}</div>
                 <div style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{loggedInUser.role}</div>
               </div>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="btn btn-secondary"
                 style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -132,14 +216,11 @@ export default function App() {
               </button>
             </div>
           )}
-
-          <ThemeToggle />
         </div>
-
-      </header>
+      </div>
 
       {/* Main View Container */}
-      <main style={{ flex: 1, padding: '24px', position: 'relative' }}>
+      <main style={{ flex: 1, padding: isMobile ? '12px' : '24px', position: 'relative' }}>
         
         {currentTab === 'ticket-gen' && <TicketGenView />}
         
@@ -160,8 +241,8 @@ export default function App() {
       {/* Footer */}
       <footer style={{
         textAlign: 'center',
-        padding: '24px',
-        fontSize: '12px',
+        padding: isMobile ? '16px' : '24px',
+        fontSize: isMobile ? '11px' : '12px',
         color: 'var(--text-tertiary)',
         borderTop: '1px solid var(--border-color)',
         backgroundColor: 'var(--bg-secondary)'

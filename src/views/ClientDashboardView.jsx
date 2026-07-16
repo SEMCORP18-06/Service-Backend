@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useResponsive from '../hooks/useResponsive.js';
 import { socket } from '../socket';
 import { Phone, ClipboardList, CheckCircle2, ChevronRight, MessageSquare, User, Clock, Send } from 'lucide-react';
 
 export default function ClientDashboardView() {
+  const { isMobile } = useResponsive();
   const [whatsapp, setWhatsapp] = useState('9988776655');
   const [isSearched, setIsSearched] = useState(false);
   const [tickets, setTickets] = useState([]);
@@ -11,6 +13,7 @@ export default function ClientDashboardView() {
   const [commentInput, setCommentInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
   const logsEndRef = useRef(null);
 
   // Fetch tickets for WhatsApp
@@ -52,6 +55,7 @@ export default function ClientDashboardView() {
     fetchLogs(ticket.id);
     // Join Socket Room for this ticket to receive real-time log additions
     socket.emit('join_ticket', ticket.id);
+    if (isMobile) setShowDetailOnMobile(true);
   };
 
   // Socket updates for real-time logs
@@ -124,7 +128,7 @@ export default function ClientDashboardView() {
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '1000px', margin: isMobile ? '16px auto' : '40px auto', padding: '0 20px' }}>
       {!isSearched ? (
         <div className="card-glass animate-fade-in" style={{ maxWidth: '500px', margin: '60px auto', padding: '32px', textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', marginBottom: '20px' }}>
@@ -159,10 +163,11 @@ export default function ClientDashboardView() {
           </form>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: selectedTicket ? '1fr 1.2fr' : '1fr', gap: '24px' }} className="animate-fade-in">
+        <div style={{ display: 'grid', gridTemplateColumns: selectedTicket && !isMobile ? '1fr 1.2fr' : '1fr', gap: isMobile ? '16px' : '24px' }} className="animate-fade-in">
           
           {/* Left Column: Tickets list */}
-          <div className="card-glass" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
+          {(!isMobile || !showDetailOnMobile) && (
+          <div className="card-glass" style={{ padding: isMobile ? '16px' : '24px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2>Your Service Tickets</h2>
@@ -230,19 +235,23 @@ export default function ClientDashboardView() {
               </div>
             )}
           </div>
+          )}
 
           {/* Right Column: Ticket details & logs */}
-          {selectedTicket && (
-            <div className="card-glass" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+          {selectedTicket && (!isMobile || showDetailOnMobile) && (
+            <div className="card-glass" style={{ padding: isMobile ? '16px' : '24px', display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '20px' }}>
+              {isMobile && (
+                <button className="mobile-back-btn" onClick={() => { setShowDetailOnMobile(false); }} style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer', color: 'var(--text-primary)', marginBottom: '4px' }}>← Back to List</button>
+              )}
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', gap: isMobile ? '12px' : '0' }}>
                 <div>
                   <span className={`badge badge-${selectedTicket.status}`} style={{ marginBottom: '8px' }}>
                     {selectedTicket.status}
                   </span>
-                  <h2 style={{ fontSize: '20px', fontFamily: 'var(--font-heading)' }}>{selectedTicket.ticket_number}</h2>
+                  <h2 style={{ fontSize: isMobile ? '17px' : '20px', fontFamily: 'var(--font-heading)' }}>{selectedTicket.ticket_number}</h2>
                   <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Equipment: {selectedTicket.product_name} ({selectedTicket.product_code})</p>
                 </div>
-                <div style={{ textAlign: 'right', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                <div style={{ textAlign: isMobile ? 'left' : 'right', fontSize: '12px', color: 'var(--text-secondary)' }}>
                   <div>Company: <strong>{selectedTicket.company_name}</strong></div>
                   <div>Email: <strong>{selectedTicket.client_email}</strong></div>
                   {selectedTicket.serial_number && <div>Serial No: <strong>{selectedTicket.serial_number}</strong></div>}
@@ -268,7 +277,7 @@ export default function ClientDashboardView() {
                       <div style={{ display: 'flex', alignItems: 'flex-start', minWidth: '600px', position: 'relative' }}>
                         
                         {/* Spacer for Left Label Column */}
-                        <div style={{ width: '80px', flexShrink: 0 }} />
+                        <div style={{ width: isMobile ? '60px' : '80px', flexShrink: 0 }} />
 
                         {/* Stepper track */}
                         <div style={{
@@ -316,7 +325,7 @@ export default function ClientDashboardView() {
                             const isCurrent = ticket.status === node.key || (node.key === 'open' && ticket.status === 'assigned');
 
                             return (
-                              <div key={node.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '130px', textAlign: 'center' }}>
+                              <div key={node.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: isMobile ? '100px' : '130px', textAlign: 'center' }}>
                                 {/* Milestone Name */}
                                 <div style={{ fontSize: '11px', fontWeight: 700, color: isCompleted ? 'var(--text-primary)' : 'var(--text-tertiary)', minHeight: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                                   {node.label}
@@ -350,7 +359,7 @@ export default function ClientDashboardView() {
                       {/* Plan Row */}
                       <div style={{ display: 'flex', alignItems: 'center', minWidth: '600px', marginTop: '12px' }}>
                         {/* Row Label */}
-                        <div style={{ width: '80px', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <div style={{ width: isMobile ? '60px' : '80px', flexShrink: 0, fontSize: isMobile ? '10px' : '12px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                           Plan
                         </div>
                         {/* Values */}
@@ -360,7 +369,7 @@ export default function ClientDashboardView() {
                             ticket.eta_in_progress,
                             ticket.eta_resolved
                           ].map((date, idx) => (
-                            <div key={idx} style={{ width: '130px', textAlign: 'center', fontSize: '12px', color: date ? 'var(--text-primary)' : 'var(--text-tertiary)', fontWeight: date ? 600 : 400 }}>
+                            <div key={idx} style={{ width: isMobile ? '100px' : '130px', textAlign: 'center', fontSize: isMobile ? '10px' : '12px', color: date ? 'var(--text-primary)' : 'var(--text-tertiary)', fontWeight: date ? 600 : 400 }}>
                               {formatDate(date)}
                             </div>
                           ))}
@@ -370,7 +379,7 @@ export default function ClientDashboardView() {
                       {/* Actual Row */}
                       <div style={{ display: 'flex', alignItems: 'center', minWidth: '600px', marginTop: '8px' }}>
                         {/* Row Label */}
-                        <div style={{ width: '80px', flexShrink: 0, fontSize: '12px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <div style={{ width: isMobile ? '60px' : '80px', flexShrink: 0, fontSize: isMobile ? '10px' : '12px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                           Actual
                         </div>
                         {/* Values */}
@@ -380,7 +389,7 @@ export default function ClientDashboardView() {
                             ticket.in_progress_at,
                             ticket.resolved_at
                           ].map((date, idx) => (
-                            <div key={idx} style={{ width: '130px', textAlign: 'center', fontSize: '12px', color: date ? '#10b981' : 'var(--text-tertiary)', fontWeight: date ? 700 : 400 }}>
+                            <div key={idx} style={{ width: isMobile ? '100px' : '130px', textAlign: 'center', fontSize: isMobile ? '10px' : '12px', color: date ? '#10b981' : 'var(--text-tertiary)', fontWeight: date ? 700 : 400 }}>
                               {formatDate(date)}
                             </div>
                           ))}
@@ -498,7 +507,7 @@ export default function ClientDashboardView() {
                 <h3 style={{ fontSize: '15px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Service Logs & Comments</h3>
                 
                 <div style={{
-                  maxHeight: '220px',
+                  maxHeight: isMobile ? '180px' : '220px',
                   overflowY: 'auto',
                   paddingRight: '6px',
                   display: 'flex',

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import useResponsive from '../hooks/useResponsive.js';
 import { Lock, Mail, ShieldAlert, User, Phone, Briefcase } from 'lucide-react';
 
 export default function LoginView({ onLogin }) {
+  const { isMobile } = useResponsive();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -129,8 +131,8 @@ export default function LoginView({ onLogin }) {
   };
 
   return (
-    <div style={{ maxWidth: '440px', margin: '60px auto', padding: '0 20px' }}>
-      <div className="card-glass animate-fade-in" style={{ padding: '32px' }}>
+    <div style={{ maxWidth: '440px', margin: isMobile ? '20px auto' : '60px auto', padding: '0 20px' }}>
+      <div className="card-glass animate-fade-in" style={{ padding: isMobile ? '24px' : '32px' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{
@@ -144,7 +146,7 @@ export default function LoginView({ onLogin }) {
           }}>
             <img src="/semco_logo.png" alt="SEMCO Logo" style={{ height: '48px', objectFit: 'contain' }} />
           </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{isLoginMode ? 'Staff Portal Login' : 'Create Staff Account'}</h2>
+          <h2 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 800 }}>{isLoginMode ? 'Staff Portal Login' : 'Create Staff Account'}</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
             SEMCORP Process & Vacuum Systems Pvt. Ltd.
           </p>
@@ -263,7 +265,7 @@ export default function LoginView({ onLogin }) {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label htmlFor="signup-role" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={14} /> Portal Role</label>
                   <select
@@ -307,7 +309,7 @@ export default function LoginView({ onLogin }) {
               setError('');
               setSuccess('');
             }}
-            style={{ fontSize: '12.5px', background: 'none', border: 'none', color: 'var(--primary)', padding: 0 }}
+            style={{ fontSize: isMobile ? '12px' : '12.5px', background: 'none', border: 'none', color: 'var(--primary)', padding: 0 }}
           >
             {isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
           </button>

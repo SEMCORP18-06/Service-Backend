@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useResponsive from '../hooks/useResponsive.js';
 import { socket } from '../socket';
 import { ClipboardList, User, Phone, Mail, Clock, Send, ShieldAlert, Award } from 'lucide-react';
 
 export default function EngineerDashboardView({ user }) {
+  const { isMobile } = useResponsive();
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -14,6 +16,7 @@ export default function EngineerDashboardView({ user }) {
   const [finalComments, setFinalComments] = useState('');
   const [serviceFormImage, setServiceFormImage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
   const logsEndRef = useRef(null);
 
   useEffect(() => {
@@ -51,6 +54,7 @@ export default function EngineerDashboardView({ user }) {
     setStatusInput(ticket.status);
     fetchLogs(ticket.id);
     socket.emit('join_ticket', ticket.id);
+    if (isMobile) setShowDetailOnMobile(true);
   };
 
   // Socket listener for logs
@@ -200,9 +204,9 @@ export default function EngineerDashboardView({ user }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: isMobile ? '12px 0' : '20px 0' }}>
       <div>
-        <h1 style={{ fontSize: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><Award size={24} style={{ color: 'var(--primary)' }} /> Service Engineer Panel</h1>
+        <h1 style={{ fontSize: isMobile ? '20px' : '24px', display: 'flex', alignItems: 'center', gap: '10px' }}><Award size={isMobile ? 20 : 24} style={{ color: 'var(--primary)' }} /> Service Engineer Panel</h1>
         <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Welcome back, <strong>{user.name}</strong>. View your assigned tickets and log service actions.</p>
       </div>
 
@@ -218,10 +222,11 @@ export default function EngineerDashboardView({ user }) {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: selectedTicket ? '1fr 1.2fr' : '1fr', gap: '24px' }} className="animate-fade-in">
+      <div style={{ display: 'grid', gridTemplateColumns: selectedTicket && !isMobile ? '1fr 1.2fr' : '1fr', gap: isMobile ? '16px' : '24px' }} className="animate-fade-in">
         
         {/* Left Column: Assigned Tickets list */}
-        <div className="card-glass" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
+        {(!isMobile || !showDetailOnMobile) && (
+        <div className="card-glass" style={{ padding: isMobile ? '14px' : '20px', display: 'flex', flexDirection: 'column', gap: '16px', height: 'fit-content' }}>
           <h3>Your Assigned Complaints</h3>
           
           {tickets.length === 0 ? (
@@ -264,19 +269,23 @@ export default function EngineerDashboardView({ user }) {
             </div>
           )}
         </div>
+        )}
 
         {/* Right Column: Ticket details & Action logs */}
-        {selectedTicket ? (
-          <div className="card-glass" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {selectedTicket && (!isMobile || showDetailOnMobile) ? (
+          <div className="card-glass" style={{ padding: isMobile ? '16px' : '24px', display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '20px' }}>
+            {isMobile && (
+              <button className="mobile-back-btn" onClick={() => { setShowDetailOnMobile(false); }} style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer', color: 'var(--text-primary)', marginBottom: '4px' }}>← Back to List</button>
+            )}
             
             {/* Header Details */}
-            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'flex-start', gap: isMobile ? '12px' : '0' }}>
               <div>
                 <span className={`badge badge-${selectedTicket.status}`} style={{ marginBottom: '6px' }}>{selectedTicket.status}</span>
-                <h2 style={{ fontSize: '18px', fontFamily: 'var(--font-heading)' }}>{selectedTicket.ticket_number}</h2>
+                <h2 style={{ fontSize: isMobile ? '16px' : '18px', fontFamily: 'var(--font-heading)' }}>{selectedTicket.ticket_number}</h2>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Equipment: {selectedTicket.product_name} ({selectedTicket.product_code})</p>
               </div>
-              <div style={{ textAlign: 'right', fontSize: '12px' }}>
+              <div style={{ textAlign: isMobile ? 'left' : 'right', fontSize: '12px' }}>
                 <div>Company: <strong>{selectedTicket.company_name}</strong></div>
                 <div>Contact: <strong>{selectedTicket.client_whatsapp}</strong></div>
               </div>
@@ -291,7 +300,7 @@ export default function EngineerDashboardView({ user }) {
             {/* Status change selector */}
             <div style={{ border: '1px solid var(--border-color)', padding: '16px', borderRadius: '10px' }}>
               <h4 style={{ fontSize: '13px', marginBottom: '8px' }}>Update Status</h4>
-              <form onSubmit={handleUpdateStatus} style={{ display: 'flex', gap: '12px' }}>
+              <form onSubmit={handleUpdateStatus} style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px' }}>
                 <select
                   value={statusInput}
                   onChange={(e) => setStatusInput(e.target.value)}
@@ -309,9 +318,9 @@ export default function EngineerDashboardView({ user }) {
 
             {/* Logs Timeline */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-              <h3 style={{ fontSize: '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>Visit History & Logs</h3>
+              <h3 style={{ fontSize: isMobile ? '13px' : '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>Visit History & Logs</h3>
 
-              <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
+              <div style={{ maxHeight: isMobile ? '160px' : '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
                 {logs.length === 0 ? (
                   <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '12px' }}>No logs registered.</div>
                 ) : (
@@ -349,10 +358,10 @@ export default function EngineerDashboardView({ user }) {
             </div>
 
           </div>
-        ) : (
-          <div className="card-glass" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
-            <ShieldAlert size={40} style={{ marginBottom: '12px', color: 'var(--primary)' }} />
-            <h3>Select a ticket from the left panel list to view details and update log.</h3>
+        ) : (!isMobile || !showDetailOnMobile) && (
+          <div className="card-glass" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '24px' : '40px', color: 'var(--text-tertiary)' }}>
+            <ShieldAlert size={isMobile ? 32 : 40} style={{ marginBottom: '12px', color: 'var(--primary)' }} />
+            <h3 style={{ fontSize: isMobile ? '14px' : undefined }}>Select a ticket from the {isMobile ? 'list' : 'left panel list'} to view details and update log.</h3>
           </div>
         )}
       </div>

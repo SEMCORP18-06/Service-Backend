@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ClipboardList, Mail, Phone, Building, Info, CheckCircle2 } from 'lucide-react';
+import useResponsive from '../hooks/useResponsive.js';
 
 export default function TicketGenView() {
+  const { isMobile } = useResponsive();
   const [companies, setCompanies] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
@@ -177,13 +179,13 @@ export default function TicketGenView() {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '600px', margin: isMobile ? '16px auto' : '40px auto', padding: '0 20px' }}>
       {createdTicket ? (
-        <div className="card-glass animate-fade-in" style={{ padding: '32px', textAlign: 'center', border: '1px solid var(--success)' }}>
+        <div className="card-glass animate-fade-in" style={{ padding: isMobile ? '20px' : '32px', textAlign: 'center', border: '1px solid var(--success)' }}>
           <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', backgroundColor: 'var(--success-light)', color: 'var(--success)', marginBottom: '20px' }}>
             <CheckCircle2 size={48} />
           </div>
-          <h2 style={{ marginBottom: '12px' }}>Ticket Raised Successfully!</h2>
+          <h2 style={{ marginBottom: '12px', fontSize: isMobile ? '18px' : undefined }}>Ticket Raised Successfully!</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
             Your support ticket has been registered. Our service managers will assign an engineer shortly.
           </p>
@@ -198,13 +200,13 @@ export default function TicketGenView() {
           </button>
         </div>
       ) : (
-        <div className="card-glass animate-fade-in" style={{ padding: '32px' }}>
+        <div className="card-glass animate-fade-in" style={{ padding: isMobile ? '20px' : '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', padding: '8px', borderRadius: '8px', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
               <ClipboardList size={24} />
             </div>
             <div>
-              <h2 style={{ fontSize: '20px' }}>Raise Complaint Ticket</h2>
+              <h2 style={{ fontSize: isMobile ? '17px' : '20px' }}>Raise Complaint Ticket</h2>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>SEMCORP Process & Vacuum Systems Support</p>
             </div>
           </div>
