@@ -724,16 +724,17 @@ app.patch('/api/tickets/:id/reopen', async (req, res) => {
 
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
 
-    if (ticket.status !== 'closed') {
-      return res.status(400).json({ error: "Only closed tickets can be reopened." });
+    if (ticket.status !== 'resolved' && ticket.status !== 'closed') {
+      return res.status(400).json({ error: "Only resolved or closed tickets can be reopened." });
     }
 
-    if (ticket.closed_at) {
-      const closedDate = new Date(ticket.closed_at);
-      const diffTime = Math.abs(new Date() - closedDate);
+    const referenceDate = ticket.closed_at || ticket.resolved_at;
+    if (referenceDate) {
+      const dateVal = new Date(referenceDate);
+      const diffTime = Math.abs(new Date() - dateVal);
       const diffDays = diffTime / (1000 * 60 * 60 * 24);
       if (diffDays > 30) {
-        return res.status(400).json({ error: "Ticket cannot be reopened after 30 days of closure." });
+        return res.status(400).json({ error: "Ticket cannot be reopened after 30 days of resolution or closure." });
       }
     }
 

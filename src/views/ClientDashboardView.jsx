@@ -471,10 +471,11 @@ export default function ClientDashboardView() {
               )}
 
               {/* Reopen Ticket Option for Clients */}
-              {selectedTicket.status === 'closed' && (() => {
-                if (!selectedTicket.closed_at) return true;
-                const closedDate = new Date(selectedTicket.closed_at);
-                const diffTime = Math.abs(new Date() - closedDate);
+              {(selectedTicket.status === 'resolved' || selectedTicket.status === 'closed') && (() => {
+                const targetDate = selectedTicket.closed_at || selectedTicket.resolved_at;
+                if (!targetDate) return true;
+                const dateObj = new Date(targetDate);
+                const diffTime = Math.abs(new Date() - dateObj);
                 const diffDays = diffTime / (1000 * 60 * 60 * 24);
                 return diffDays <= 30;
               })() && (
@@ -488,7 +489,7 @@ export default function ClientDashboardView() {
                     boxShadow: '0 4px 10px rgba(245, 158, 11, 0.2)'
                   }}
                 >
-                  Reopen Ticket (Available within 30 days of closure)
+                  Reopen Ticket (Available within 30 days of resolution/closure)
                 </button>
               )}
 
