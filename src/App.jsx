@@ -133,7 +133,7 @@ export default function App() {
         {/* Global Controls & Auth State */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
-          <div className="desktop-auth">
+          <div className="desktop-auth" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {loggedInUser && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px', borderRight: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
@@ -153,10 +153,13 @@ export default function App() {
                 </button>
               </div>
             )}
+            <ThemeToggle />
           </div>
 
-          {/* Theme Toggle is always visible and positioned next to menu button on mobile */}
-          <ThemeToggle />
+          {/* Theme Toggle for mobile - only rendered/visible when desktop auth is hidden */}
+          <div className="mobile-auth-controls" style={{ alignItems: 'center', gap: '12px' }}>
+            <ThemeToggle />
+          </div>
 
           {/* Hamburger button for mobile */}
           <button

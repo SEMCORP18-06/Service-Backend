@@ -457,6 +457,10 @@ label {
   color: white;
 }
 
+.mobile-auth-controls {
+  display: none !important;
+}
+
 /* ==============================
    MEDIA QUERIES
    ============================== */
@@ -487,6 +491,10 @@ label {
 
   .desktop-auth {
     display: none !important;
+  }
+
+  .mobile-auth-controls {
+    display: flex !important;
   }
 
   .card-glass {
