@@ -200,6 +200,8 @@ export default function LoginView({ onLogin }) {
                   }}
                   placeholder="e.g. name@semcogroups.com"
                   required
+                  inputMode="email"
+                  autoComplete="username"
                   style={emailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
                 />
                 {emailDomainError && (
@@ -216,6 +218,7 @@ export default function LoginView({ onLogin }) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  autoComplete="current-password"
                 />
               </div>
             </>
@@ -246,6 +249,8 @@ export default function LoginView({ onLogin }) {
                   }}
                   placeholder="e.g. name@semcogroups.com"
                   required
+                  inputMode="email"
+                  autoComplete="username"
                   style={signupEmailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
                 />
                 {signupEmailDomainError && (
@@ -257,11 +262,12 @@ export default function LoginView({ onLogin }) {
                 <label htmlFor="signup-phone" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={14} /> WhatsApp Mobile Number</label>
                 <input
                   id="signup-phone"
-                  type="text"
+                  type="tel"
                   value={signupPhone}
                   onChange={(e) => setSignupPhone(e.target.value)}
                   placeholder="e.g. +919876543210"
                   required
+                  inputMode="tel"
                 />
               </div>
 
@@ -289,13 +295,14 @@ export default function LoginView({ onLogin }) {
                     onChange={(e) => setSignupPassword(e.target.value)}
                     placeholder="••••••••"
                     required
+                    autoComplete="new-password"
                   />
                 </div>
               </div>
             </>
           )}
 
-          <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px' }}>
+          <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px', minHeight: '44px' }}>
             {loading ? 'Processing...' : isLoginMode ? 'Sign In' : 'Register Account'}
           </button>
         </form>

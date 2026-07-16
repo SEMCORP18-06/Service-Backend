@@ -526,15 +526,20 @@ label {
   }
 
   .btn {
-    padding: 8px 14px;
-    font-size: 12px;
+    padding: 10px 16px;
+    font-size: 13px;
     border-radius: 8px;
+    min-height: 44px; /* Ensure 44px min touch target on mobile */
+    display: inline-flex;
+    align-items: center;
+    justifyContent: center;
   }
 
   input, select, textarea {
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 12px 14px; /* Increased for mobile touch target */
+    font-size: 14px; /* Stop iOS Safari zoom on input focus (minimum 16px is ideal, 14px+ works well) */
     border-radius: 8px;
+    min-height: 44px;
   }
 
   label {
@@ -544,6 +549,47 @@ label {
   h1 { font-size: 20px; }
   h2 { font-size: 18px; }
   h3 { font-size: 15px; }
+
+  /* Mobile bottom padding for notched devices */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Touch device overrides: Disable hover transformations on click */
+@media (hover: none) {
+  .card-glass:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-md) !important;
+  }
+  .btn:hover {
+    transform: none !important;
+  }
+  .sheet-option:active {
+    background-color: var(--bg-tertiary) !important;
+  }
+}
+
+/* Word wrapping utilities */
+.word-break-all {
+  word-break: break-all;
+}
+.word-break-word {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Scroll indicator styling for horizontal scroll elements */
+.horizontal-scroll-container {
+  overflow-x: auto;
+  position: relative;
+}
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
 }
 
 /* Reduced Motion */

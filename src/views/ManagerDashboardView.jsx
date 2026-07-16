@@ -62,6 +62,11 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
   const [invoiceSparePartsCost, setInvoiceSparePartsCost] = useState('');
   const [invoicePurchaseDate, setInvoicePurchaseDate] = useState('');
 
+  // Mobile Collapsible Section States
+  const [dispatchOpenMobile, setDispatchOpenMobile] = useState(false);
+  const [logsOpenMobile, setLogsOpenMobile] = useState(false);
+  const [chatOpenMobile, setChatOpenMobile] = useState(false);
+
   const [manualCompanyInput, setManualCompanyInput] = useState('');
   const [manualSuggestions, setManualSuggestions] = useState([]);
   const [manualShowSuggestions, setManualShowSuggestions] = useState(false);
@@ -1053,180 +1058,253 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                   )}
                 </div>
 
-                {/* Assignment Control Card */}
-                <div className="card-glass" style={{ padding: '20px' }}>
-                  <h3 style={{ fontSize: '15px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={18} style={{ color: 'var(--accent)' }} /> Dispatch Engineer</h3>
-                  
-                  <form onSubmit={handleAssign} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                      <div>
-                        <label htmlFor="assign-eng" style={{ fontSize: '12px' }}>Select Available Engineer</label>
-                        <select 
-                          id="assign-eng"
-                          value={selectedEngineerId} 
-                          onChange={(e) => setSelectedEngineerId(e.target.value)}
-                          required
-                        >
-                          <option value="">-- Choose Engineer --</option>
-                          {engineers.map(e => (
-                            <option key={e.id} value={e.id}>{e.name} {e.is_available ? '(Available)' : '(Busy)'}</option>
-                          ))}
-                        </select>
-                      </div>
+                 <div className="card-glass" style={{ padding: isMobile ? '12px 16px' : '20px' }}>
+                   <h3 
+                     onClick={() => isMobile && setDispatchOpenMobile(!dispatchOpenMobile)}
+                     style={{ 
+                       fontSize: '15px', 
+                       marginBottom: (!isMobile || dispatchOpenMobile) ? '12px' : '0', 
+                       display: 'flex', 
+                       alignItems: 'center', 
+                       justifyContent: 'space-between',
+                       cursor: isMobile ? 'pointer' : 'default',
+                       userSelect: 'none'
+                     }}
+                   >
+                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <Calendar size={18} style={{ color: 'var(--accent)' }} /> Dispatch Engineer
+                     </span>
+                     {isMobile && (
+                       <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                         {dispatchOpenMobile ? '▲' : '▼'}
+                       </span>
+                     )}
+                   </h3>
+                   
+                   {(!isMobile || dispatchOpenMobile) && (
+                     <form onSubmit={handleAssign} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                         <div>
+                           <label htmlFor="assign-eng" style={{ fontSize: '12px' }}>Select Available Engineer</label>
+                           <select 
+                             id="assign-eng"
+                             value={selectedEngineerId} 
+                             onChange={(e) => setSelectedEngineerId(e.target.value)}
+                             required
+                           >
+                             <option value="">-- Choose Engineer --</option>
+                             {engineers.map(e => (
+                               <option key={e.id} value={e.id}>{e.name} {e.is_available ? '(Available)' : '(Busy)'}</option>
+                             ))}
+                           </select>
+                         </div>
 
-                      <div>
-                        <label htmlFor="assign-slot" style={{ fontSize: '12px' }}>Schedule Time Slot</label>
-                        <input 
-                          id="assign-slot"
-                          type="datetime-local" 
-                          value={scheduledSlot}
-                          onChange={(e) => setScheduledSlot(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
+                         <div>
+                           <label htmlFor="assign-slot" style={{ fontSize: '12px' }}>Schedule Time Slot</label>
+                           <input 
+                             id="assign-slot"
+                             type="datetime-local" 
+                             value={scheduledSlot}
+                             onChange={(e) => setScheduledSlot(e.target.value)}
+                             required
+                           />
+                         </div>
+                       </div>
 
-                    <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-end' }} disabled={loading}>
-                      {loading ? 'Dispatching...' : 'Assign Engineer & Alert Client'}
-                    </button>
-                  </form>
-                </div>
+                       <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-end', width: isMobile ? '100%' : 'auto', minHeight: '44px' }} disabled={loading}>
+                         {loading ? 'Dispatching...' : 'Assign Engineer'}
+                       </button>
+                     </form>
+                   )}
+                 </div>
 
                 {/* Service Logs / Comments Card */}
-                <div className="card-glass" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                  <h3 style={{ fontSize: '15px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>Service Logs (Real-time Timeline)</h3>
-                  
-                  <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
-                    {logs.length === 0 ? (
-                      <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '12px', padding: '12px' }}>No logs registered yet.</div>
-                    ) : (
-                      <div className="timeline">
-                        {logs.map((log) => (
-                          <div key={log.id} className="timeline-item">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-tertiary)' }}>
-                              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{log.author_name}</span>
-                              <span>{new Date(log.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
-                            </div>
-                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', backgroundColor: 'var(--bg-secondary)', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                              {log.comment}
-                            </p>
-                          </div>
-                        ))}
-                        <div ref={logsEndRef} />
-                      </div>
+                <div className="card-glass" style={{ padding: isMobile ? '12px 16px' : '20px', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+                  <h3 
+                    onClick={() => isMobile && setLogsOpenMobile(!logsOpenMobile)}
+                    style={{ 
+                      fontSize: '15px', 
+                      borderBottom: (!isMobile || logsOpenMobile) ? '1px solid var(--border-color)' : 'none', 
+                      paddingBottom: '6px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: isMobile ? 'pointer' : 'default',
+                      userSelect: 'none',
+                      marginBottom: 0
+                    }}
+                  >
+                    <span>Service Logs (Real-time Timeline)</span>
+                    {isMobile && (
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {logsOpenMobile ? '▲' : '▼'}
+                      </span>
                     )}
-                  </div>
+                  </h3>
+                  
+                  {(!isMobile || logsOpenMobile) && (
+                    <>
+                      <div style={{ maxHeight: isMobile ? '160px' : '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
+                        {logs.length === 0 ? (
+                          <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '12px', padding: '12px' }}>No logs registered yet.</div>
+                        ) : (
+                          <div className="timeline">
+                            {logs.map((log) => (
+                              <div key={log.id} className="timeline-item">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{log.author_name}</span>
+                                  <span>{new Date(log.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                                </div>
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', backgroundColor: 'var(--bg-secondary)', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                                  {log.comment}
+                                </p>
+                              </div>
+                            ))}
+                            <div ref={logsEndRef} />
+                          </div>
+                        )}
+                      </div>
 
-                  <form onSubmit={handleAddLog} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-                    <input 
-                      type="text" 
-                      value={logInput} 
-                      onChange={(e) => setLogInput(e.target.value)} 
-                      placeholder="Add system comment or internal note..." 
-                      style={{ borderRadius: '24px', padding: '8px 16px', fontSize: '12px' }}
-                      required 
-                    />
-                    <button type="submit" className="btn btn-secondary" style={{ padding: '0 16px', borderRadius: '24px', fontSize: '12px' }}>Add Log</button>
-                  </form>
+                      <form onSubmit={handleAddLog} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                        <input 
+                          type="text" 
+                          value={logInput} 
+                          onChange={(e) => setLogInput(e.target.value)} 
+                          placeholder="Add system comment or internal note..." 
+                          style={{ borderRadius: '24px', padding: '8px 16px', fontSize: '12px' }}
+                          required 
+                        />
+                        <button type="submit" className="btn btn-secondary" style={{ padding: '0 16px', borderRadius: '24px', fontSize: '12px', minHeight: '38px' }}>Add Log</button>
+                      </form>
+                    </>
+                  )}
                 </div>
 
               </div>
 
               {/* Workspace Right: Direct WhatsApp Messaging */}
-              <div className="card-glass" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', borderLeft: '2px solid rgba(16, 185, 129, 0.1)' }}>
-                <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--success)' }}>
-                  <MessageSquare size={20} />
-                  <div>
-                    <h3 style={{ fontSize: '15px', color: 'var(--text-primary)' }}>WhatsApp Live Chat</h3>
-                    <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Converse directly with Client ({selectedTicket.client_whatsapp})</p>
+              <div className="card-glass" style={{ padding: isMobile ? '12px 16px' : '20px', display: 'flex', flexDirection: 'column', gap: '12px', borderLeft: isMobile ? 'none' : '2px solid rgba(16, 185, 129, 0.1)' }}>
+                <div 
+                  onClick={() => isMobile && setChatOpenMobile(!chatOpenMobile)}
+                  style={{ 
+                    borderBottom: (!isMobile || chatOpenMobile) ? '1px solid var(--border-color)' : 'none', 
+                    paddingBottom: '10px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    color: 'var(--success)',
+                    cursor: isMobile ? 'pointer' : 'default',
+                    userSelect: 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MessageSquare size={20} />
+                    <div>
+                      <h3 style={{ fontSize: '15px', color: 'var(--text-primary)' }}>WhatsApp Live Chat</h3>
+                      {!isMobile && <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Converse directly with Client ({selectedTicket.client_whatsapp})</p>}
+                    </div>
                   </div>
-                </div>
-
-                {/* Message display container */}
-                <div style={{
-                  flex: 1,
-                  maxHeight: '420px',
-                  minHeight: '350px',
-                  overflowY: 'auto',
-                  backgroundColor: 'var(--bg-primary)',
-                  backgroundImage: 'radial-gradient(var(--border-color) 1px, transparent 0)',
-                  backgroundSize: '16px 16px',
-                  borderRadius: '10px',
-                  padding: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  border: '1px solid var(--border-color)'
-                }}>
-                  {chatMessages.length === 0 ? (
-                    <div style={{ textAlign: 'center', margin: 'auto', color: 'var(--text-tertiary)', fontSize: '12px' }}>No chat history found.</div>
-                  ) : (
-                    chatMessages.map((msg) => {
-                      const isManager = msg.sender === 'manager';
-                      const isBot = msg.sender === 'bot';
-                      
-                      let bubbleBg = 'var(--bg-secondary)';
-                      let textCol = 'var(--text-primary)';
-                      let borderCol = 'var(--border-color)';
-                      let align = 'flex-start';
-                      let senderName = 'Client';
-
-                      if (isManager) {
-                        bubbleBg = 'var(--primary-light)';
-                        borderCol = 'rgba(99, 102, 241, 0.2)';
-                        align = 'flex-end';
-                        senderName = 'You (Manager)';
-                      } else if (isBot) {
-                        bubbleBg = 'var(--warning-light)';
-                        borderCol = 'rgba(245, 158, 11, 0.2)';
-                        align = 'flex-start';
-                        senderName = 'Bot Automated';
-                      }
-
-                      return (
-                        <div 
-                          key={msg.id}
-                          style={{
-                            alignSelf: align,
-                            backgroundColor: bubbleBg,
-                            color: textCol,
-                            border: `1px solid ${borderCol}`,
-                            padding: '8px 12px',
-                            borderRadius: isManager ? '12px 12px 0 12px' : '12px 12px 12px 0',
-                            maxWidth: '85%',
-                            fontSize: '12.5px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                            whiteSpace: 'pre-line'
-                          }}
-                        >
-                          <div style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-tertiary)', marginBottom: '2px', textTransform: 'uppercase' }}>
-                            {senderName}
-                          </div>
-                          <div>{msg.message_text}</div>
-                          <div style={{ fontSize: '8px', color: 'var(--text-tertiary)', textAlign: 'right', marginTop: '2px' }}>
-                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-                      );
-                    })
+                  {isMobile && (
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {chatOpenMobile ? '▲' : '▼'}
+                    </span>
                   )}
-                  <div ref={chatEndRef} />
                 </div>
 
-                {/* Send chat input */}
-                <form onSubmit={handleSendWhatsApp} style={{ display: 'flex', gap: '8px' }}>
-                  <input 
-                    type="text" 
-                    value={chatInput} 
-                    onChange={(e) => setChatInput(e.target.value)} 
-                    placeholder="Type WhatsApp message as Manager..." 
-                    style={{ borderRadius: '24px', padding: '10px 16px', fontSize: '13px' }}
-                    required 
-                  />
-                  <button type="submit" className="btn btn-primary" style={{ borderRadius: '50%', padding: 0, width: '40px', height: '40px', display: 'flex', alignItems: 'center', justify: 'center' }}>
-                    <Send size={16} />
-                  </button>
-                </form>
+                {(!isMobile || chatOpenMobile) && (
+                  <>
+                    {isMobile && (
+                      <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', marginTop: '-4px' }}>
+                        Client Number: <strong>{selectedTicket.client_whatsapp}</strong>
+                      </div>
+                    )}
+                    {/* Message display container */}
+                    <div style={{
+                      flex: 1,
+                      maxHeight: isMobile ? '250px' : '420px',
+                      minHeight: isMobile ? '200px' : '350px',
+                      overflowY: 'auto',
+                      backgroundColor: 'var(--bg-primary)',
+                      backgroundImage: 'radial-gradient(var(--border-color) 1px, transparent 0)',
+                      backgroundSize: '16px 16px',
+                      borderRadius: '10px',
+                      padding: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      {chatMessages.length === 0 ? (
+                        <div style={{ textAlign: 'center', margin: 'auto', color: 'var(--text-tertiary)', fontSize: '12px' }}>No chat history found.</div>
+                      ) : (
+                        chatMessages.map((msg) => {
+                          const isManager = msg.sender === 'manager';
+                          const isBot = msg.sender === 'bot';
+                          
+                          let bubbleBg = 'var(--bg-secondary)';
+                          let textCol = 'var(--text-primary)';
+                          let borderCol = 'var(--border-color)';
+                          let align = 'flex-start';
+                          let senderName = 'Client';
+
+                          if (isManager) {
+                            bubbleBg = 'var(--primary-light)';
+                            borderCol = 'rgba(99, 102, 241, 0.2)';
+                            align = 'flex-end';
+                            senderName = 'You (Manager)';
+                          } else if (isBot) {
+                            bubbleBg = 'var(--warning-light)';
+                            borderCol = 'rgba(245, 158, 11, 0.2)';
+                            align = 'flex-start';
+                            senderName = 'Bot Automated';
+                          }
+
+                          return (
+                            <div 
+                              key={msg.id}
+                              style={{
+                                alignSelf: align,
+                                backgroundColor: bubbleBg,
+                                color: textCol,
+                                border: `1px solid ${borderCol}`,
+                                padding: '8px 12px',
+                                borderRadius: isManager ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                                maxWidth: '85%',
+                                fontSize: '12.5px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                whiteSpace: 'pre-line'
+                              }}
+                            >
+                              <div style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-tertiary)', marginBottom: '2px', textTransform: 'uppercase' }}>
+                                {senderName}
+                              </div>
+                              <div>{msg.message_text}</div>
+                              <div style={{ fontSize: '8px', color: 'var(--text-tertiary)', textAlign: 'right', marginTop: '2px' }}>
+                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                      <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Send chat input */}
+                    <form onSubmit={handleSendWhatsApp} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        value={chatInput} 
+                        onChange={(e) => setChatInput(e.target.value)} 
+                        placeholder="Type WhatsApp message..." 
+                        style={{ borderRadius: '24px', padding: '10px 16px', fontSize: '13px' }}
+                        required 
+                      />
+                      <button type="submit" className="btn btn-primary" style={{ borderRadius: '50%', padding: 0, width: isMobile ? '44px' : '40px', height: isMobile ? '44px' : '40px', minHeight: isMobile ? '44px' : '40px', minWidth: isMobile ? '44px' : '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Send size={16} />
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
 
             </div>

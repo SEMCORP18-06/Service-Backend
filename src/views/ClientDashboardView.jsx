@@ -14,6 +14,7 @@ export default function ClientDashboardView() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
+  const [logsOpenMobile, setLogsOpenMobile] = useState(false);
   const logsEndRef = useRef(null);
 
   // Fetch tickets for WhatsApp
@@ -150,14 +151,15 @@ export default function ClientDashboardView() {
               <label htmlFor="lookup-whatsapp" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={14} /> WhatsApp Phone Number</label>
               <input
                 id="lookup-whatsapp"
-                type="text"
+                type="tel"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="e.g. 9988776655"
                 required
+                inputMode="tel"
               />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', minHeight: '44px' }}>
               {loading ? 'Searching...' : 'Access My Dashboard'}
             </button>
           </form>
@@ -504,52 +506,76 @@ export default function ClientDashboardView() {
 
               {/* Service Logs / Visit Comments (Real-time Timeline) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                <h3 style={{ fontSize: '15px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Service Logs & Comments</h3>
-                
-                <div style={{
-                  maxHeight: isMobile ? '180px' : '220px',
-                  overflowY: 'auto',
-                  paddingRight: '6px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}>
-                  {logs.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '12px', padding: '12px' }}>
-                      No comments or service logs registered yet.
-                    </div>
-                  ) : (
-                    <div className="timeline">
-                      {logs.map((log) => (
-                        <div key={log.id} className="timeline-item">
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--text-tertiary)' }}>
-                            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{log.author_name}</span>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} /> {new Date(log.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
-                          </div>
-                          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', backgroundColor: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            {log.comment}
-                          </p>
-                        </div>
-                      ))}
-                      <div ref={logsEndRef} />
-                    </div>
+                <h3 
+                  onClick={() => isMobile && setLogsOpenMobile(!logsOpenMobile)}
+                  style={{ 
+                    fontSize: '15px', 
+                    borderBottom: (!isMobile || logsOpenMobile) ? '1px solid var(--border-color)' : 'none', 
+                    paddingBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: isMobile ? 'pointer' : 'default',
+                    userSelect: 'none',
+                    marginBottom: 0
+                  }}
+                >
+                  <span>Service Logs & Comments</span>
+                  {isMobile && (
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {logsOpenMobile ? '▲' : '▼'}
+                    </span>
                   )}
-                </div>
+                </h3>
+                
+                {(!isMobile || logsOpenMobile) && (
+                  <>
+                    <div style={{
+                      maxHeight: isMobile ? '180px' : '220px',
+                      overflowY: 'auto',
+                      paddingRight: '6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      {logs.length === 0 ? (
+                        <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '12px', padding: '12px' }}>
+                          No comments or service logs registered yet.
+                        </div>
+                      ) : (
+                        <div className="timeline">
+                          {logs.map((log) => (
+                            <div key={log.id} className="timeline-item">
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{log.author_name}</span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={10} /> {new Date(log.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                              </div>
+                              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', backgroundColor: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                {log.comment}
+                              </p>
+                            </div>
+                          ))}
+                          <div ref={logsEndRef} />
+                        </div>
+                      )}
+                    </div>
 
-                {/* Add Service Log comment form */}
-                <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-                  <input
-                    type="text"
-                    value={commentInput}
-                    onChange={(e) => setCommentInput(e.target.value)}
-                    placeholder="Add a visit comment or inquiry about this ticket..."
-                    style={{ borderRadius: '24px', padding: '10px 16px', fontSize: '13px' }}
-                    required
-                  />
-                  <button type="submit" className="btn btn-primary" style={{ padding: '0 16px', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Send size={16} />
-                  </button>
-                </form>
+                    {/* Add Service Log comment form */}
+                    <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                      <input
+                        type="text"
+                        value={commentInput}
+                        onChange={(e) => setCommentInput(e.target.value)}
+                        placeholder="Add a visit comment or inquiry about this ticket..."
+                        style={{ borderRadius: '24px', padding: '10px 16px', fontSize: '13px' }}
+                        required
+                      />
+                      <button type="submit" className="btn btn-primary" style={{ padding: '0 16px', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40px', minWidth: '40px' }}>
+                        <Send size={16} />
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
 
             </div>

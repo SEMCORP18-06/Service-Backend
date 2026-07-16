@@ -12,6 +12,18 @@ import { Wrench, Shield, Search, FileText, LogOut, User } from 'lucide-react';
 export default function App() {
   const { isMobile } = useResponsive();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (mobileMenuOpen && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen, isMobile]);
+
   const [currentTab, setCurrentTab] = useState(() => {
     const saved = localStorage.getItem('semcorp_tab');
     return saved || 'ticket-gen';
@@ -122,7 +134,7 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           
           <div className="desktop-auth">
-            {loggedInUser && currentTab === 'staff' && (
+            {loggedInUser && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '8px', borderRight: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
                   <User size={16} />
@@ -164,15 +176,39 @@ export default function App() {
       <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'active' : ''}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
           <span style={{ fontWeight: 700, fontSize: '16px' }}>Menu</span>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="btn btn-secondary"
-            style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {loggedInUser && (
+              <button
+                onClick={handleLogout}
+                className="btn btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '12px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '4px', minHeight: '32px' }}
+                title="Log Out"
+              >
+                <LogOut size={14} /> Log Out
+              </button>
+            )}
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="btn btn-secondary"
+              style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}
+              aria-label="Close menu"
+            >
+              ✕
+            </button>
+          </div>
         </div>
+
+        {loggedInUser && (
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
+              <User size={16} />
+            </div>
+            <div style={{ fontSize: '12px', lineHeight: 1.2, flex: 1 }}>
+              <div style={{ fontWeight: 600 }}>{loggedInUser.name}</div>
+              <div style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{loggedInUser.role}</div>
+            </div>
+          </div>
+        )}
 
         <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
           <button
@@ -197,25 +233,6 @@ export default function App() {
 
         <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)' }}>
           <ThemeToggle />
-          {loggedInUser && (
-            <div className="drawer-user-info" style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ display: 'flex', padding: '6px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)' }}>
-                <User size={16} />
-              </div>
-              <div style={{ fontSize: '12px', lineHeight: 1.2, flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{loggedInUser.name}</div>
-                <div style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{loggedInUser.role}</div>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="btn btn-secondary"
-                style={{ padding: '6px', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                title="Log Out"
-              >
-                <LogOut size={14} style={{ color: 'var(--danger)' }} />
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

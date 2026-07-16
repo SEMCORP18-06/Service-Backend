@@ -322,6 +322,7 @@ export default function TicketGenView() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="client@company.com"
                 required
+                inputMode="email"
               />
             </div>
 
@@ -335,6 +336,7 @@ export default function TicketGenView() {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 9988776655"
                 required
+                inputMode="tel"
               />
               <span style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>We send automated updates to this WhatsApp number.</span>
             </div>
@@ -352,7 +354,7 @@ export default function TicketGenView() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%' }}>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%', minHeight: '44px' }}>
               {isSubmitting ? 'Registering Ticket...' : 'Submit Support Ticket'}
             </button>
           </form>

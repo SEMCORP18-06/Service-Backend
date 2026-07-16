@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useResponsive from '../hooks/useResponsive.js';
 import { socket } from '../socket';
 import { MessageCircle, Send, Phone, User, X, Smartphone, Bot, Wrench, ShieldAlert } from 'lucide-react';
 
@@ -9,6 +10,7 @@ const PRESETS = [
 ];
 
 export default function WhatsAppSimulator() {
+  const { isMobile } = useResponsive();
   const [isOpen, setIsOpen] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState('9988776655');
   const [currentRole, setCurrentRole] = useState('client');
@@ -19,6 +21,17 @@ export default function WhatsAppSimulator() {
   const [expandedMessageId, setExpandedMessageId] = useState(null);
   const [activeProducts, setActiveProducts] = useState([]);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, isMobile]);
 
   const handleToggleSelectProduct = async (msgId) => {
     if (expandedMessageId === msgId) {
@@ -151,27 +164,30 @@ export default function WhatsAppSimulator() {
   return (
     <>
       {/* Floating Toggle Button */}
-      <button 
-        className="btn btn-primary"
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          borderRadius: '50%',
-          width: '60px',
-          height: '60px',
-          padding: 0,
-          zIndex: 1000,
-          boxShadow: '0 8px 24px rgba(79, 70, 229, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-        title="Open WhatsApp Simulator"
-      >
-        {isOpen ? <X size={24} /> : <MessageCircle size={28} />}
-      </button>
+      {(!isOpen || !isMobile) && (
+        <button 
+          className="btn btn-primary"
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            position: 'fixed',
+            bottom: isMobile ? '16px' : '24px',
+            right: isMobile ? '16px' : '24px',
+            borderRadius: '50%',
+            width: isMobile ? '52px' : '60px',
+            height: isMobile ? '52px' : '60px',
+            padding: 0,
+            zIndex: 1000,
+            boxShadow: '0 8px 24px rgba(79, 70, 229, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: isMobile ? '52px' : '60px'
+          }}
+          title="Open WhatsApp Simulator"
+        >
+          {isOpen ? <X size={24} /> : <MessageCircle size={28} />}
+        </button>
+      )}
 
       {/* Simulator Window */}
       {isOpen && (
@@ -179,28 +195,49 @@ export default function WhatsAppSimulator() {
           className="card-glass animate-fade-in"
           style={{
             position: 'fixed',
-            bottom: '96px',
-            right: '24px',
-            width: '380px',
-            height: '600px',
+            bottom: isMobile ? '0' : '96px',
+            right: isMobile ? '0' : '24px',
+            width: isMobile ? '100vw' : '380px',
+            height: isMobile ? '100vh' : '600px',
             zIndex: 999,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            border: `1px solid ${isClient ? 'rgba(16, 185, 129, 0.2)' : 'var(--border-color)'}`,
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.15)'
+            border: isMobile ? 'none' : `1px solid ${isClient ? 'rgba(16, 185, 129, 0.2)' : 'var(--border-color)'}`,
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.15)',
+            borderRadius: isMobile ? '0' : '16px'
           }}
         >
           {/* Phone Header */}
           <div style={{
             background: themeGradient,
             color: '#ffffff',
-            padding: '14px 16px',
+            padding: isMobile ? '12px 14px' : '14px 16px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: isMobile ? '8px' : '12px',
             borderBottom: '1px solid rgba(255,255,255,0.1)'
           }}>
+            {isMobile && (
+              <button 
+                onClick={() => setIsOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  marginRight: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '44px',
+                  minWidth: '44px'
+                }}
+              >
+                <X size={22} />
+              </button>
+            )}
             <Smartphone size={18} />
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -309,9 +346,10 @@ export default function WhatsAppSimulator() {
                   onChange={(e) => setWhatsappNumber(e.target.value)}
                   placeholder="Custom WhatsApp (e.g. 9988776655)"
                   required
+                  inputMode="tel"
                   style={{ padding: '10px 14px' }}
                 />
-                <button type="submit" className="btn btn-primary" style={{ background: '#128c7e', boxShadow: 'none' }}>
+                <button type="submit" className="btn btn-primary" style={{ background: '#128c7e', boxShadow: 'none', minHeight: '44px' }}>
                   Open Custom Chat
                 </button>
               </form>
@@ -534,14 +572,14 @@ export default function WhatsAppSimulator() {
                     fontSize: '13px'
                   }}
                 />
-                <button 
+                 <button 
                   onClick={() => handleSendMessage()}
                   style={{
                     backgroundColor: isClient ? '#128c7e' : 'var(--primary)',
                     border: 'none',
                     color: 'white',
-                    width: '36px',
-                    height: '36px',
+                    width: isMobile ? '44px' : '36px',
+                    height: isMobile ? '44px' : '36px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
