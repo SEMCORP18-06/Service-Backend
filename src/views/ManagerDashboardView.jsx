@@ -939,7 +939,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                           border: '1px solid rgba(239, 68, 68, 0.2)' 
                         }}>
                           <AlertCircle size={15} />
-                          <span>Escalated to Senior Manager (Unassigned for &gt; 24 Hours)</span>
+                          <span>Escalated to Service Officer (Unassigned for &gt; 24 Hours)</span>
                         </div>
                       )}
 

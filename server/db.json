@@ -250,7 +250,7 @@
       "ticket_id": 1,
       "author_id": null,
       "author_name": "System (Escalation Engine)",
-      "comment": "ALERT: Ticket automatically escalated to Senior Manager due to assignment delay exceeding 24 hours.",
+      "comment": "ALERT: Ticket automatically escalated to Service Officer due to assignment delay exceeding 24 hours.",
       "created_at": "2026-07-08T04:47:15.185Z"
     },
     {

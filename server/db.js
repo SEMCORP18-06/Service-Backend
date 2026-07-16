@@ -447,7 +447,7 @@ class MongoDBWrapper {
         await this.createServiceLog({
           ticket_id: ticket.id,
           author_name: "System (Escalation Engine)",
-          comment: "ALERT: Ticket automatically escalated to Senior Manager due to assignment delay exceeding 24 hours."
+          comment: "ALERT: Ticket automatically escalated to Service Officer due to assignment delay exceeding 24 hours."
         });
       }
     }
