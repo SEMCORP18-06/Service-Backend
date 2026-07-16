@@ -99,7 +99,6 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ fontSize: isMobile ? '18px' : '22px', lineHeight: 1.1, fontWeight: 800 }}>SEMCORP</h1>
-            <span style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Process & Vacuum Systems</span>
           </div>
         </div>
 
