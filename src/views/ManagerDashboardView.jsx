@@ -62,6 +62,8 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
 
   // Invoice Modal States
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [invoiceSpareParts, setInvoiceSpareParts] = useState('');
   const [invoiceServiceCost, setInvoiceServiceCost] = useState('');
   const [invoiceSparePartsCost, setInvoiceSparePartsCost] = useState('');
@@ -204,10 +206,6 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
   };
 
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to delete user "${userName}"?`)) {
-      return;
-    }
-
     try {
       const res = await fetch(`https://service-backend-jhq0.onrender.com/api/users/${userId}`, {
         method: 'DELETE'
@@ -222,6 +220,9 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
     } catch (err) {
       console.error(err);
       setError("Failed to delete user.");
+    } finally {
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     }
   };
 
@@ -1634,7 +1635,7 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
                       </td>
                       <td style={{ padding: '14px 10px', textAlign: 'center' }}>
                         <button
-                          onClick={() => handleDeleteUser(u.id, u.name)}
+                          onClick={() => { setUserToDelete(u); setShowDeleteModal(true); }}
                           className="btn btn-secondary"
                           style={{
                             padding: '6px 10px',
@@ -1828,6 +1829,76 @@ export default function ManagerDashboardView({ userRole = 'manager' }) {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {showDeleteModal && userToDelete && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="card-glass" style={{
+            width: '100%',
+            maxWidth: '420px',
+            padding: '24px',
+            borderRadius: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
+            textAlign: 'center'
+          }}>
+            <div style={{ 
+              width: '56px', 
+              height: '56px', 
+              borderRadius: '50%', 
+              backgroundColor: 'var(--danger-light)', 
+              color: 'var(--danger)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              margin: '0 auto 8px auto'
+            }}>
+              <AlertCircle size={28} />
+            </div>
+
+            <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+              Confirm User Deletion
+            </h3>
+
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Are you sure you want to permanently delete user <strong>{userToDelete.name}</strong> (<code>{userToDelete.email}</code>)? This action cannot be undone.
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => { setShowDeleteModal(false); setUserToDelete(null); }}
+                style={{ flex: 1, minHeight: '44px' }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={() => handleDeleteUser(userToDelete.id, userToDelete.name)}
+                style={{ flex: 1, backgroundColor: 'var(--danger)', borderColor: 'var(--danger)', color: '#ffffff', minHeight: '44px' }}
+              >
+                Confirm Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
