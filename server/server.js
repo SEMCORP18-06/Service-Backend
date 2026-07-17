@@ -443,6 +443,94 @@ app.get('/api/auth/verify', async (req, res) => {
   }
 });
 
+// Helper: Send Password Reset OTP Email
+async function sendResetOtpEmail(user, otp) {
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+      <h2 style="color: #06b6d4; border-bottom: 2px solid #06b6d4; padding-bottom: 10px;">Reset Your Password</h2>
+      <p>Dear ${user.name},</p>
+      <p>We received a request to reset the password for your SEMCORP Staff Account. Use the following One-Time Password (OTP) to complete the reset process. This OTP is valid for 15 minutes:</p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 24px; font-weight: bold; color: #06b6d4; border: 2px dashed #06b6d4; padding: 10px 20px; border-radius: 6px; letter-spacing: 5px; display: inline-block;">${otp}</span>
+      </div>
+      
+      <p>If you did not request a password reset, please ignore this email and ensure your password remains secure.</p>
+      
+      <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eeeeee; padding-top: 10px;">
+        This is an automated system message. Please do not reply directly.
+      </p>
+    </div>
+  `;
+
+  await sendEmailViaResend(user.email, "Password Reset OTP - SEMCORP Staff Account", htmlContent);
+}
+
+// 1c-1. Auth Forgot Password (OTP Generation)
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email address is required." });
+  }
+
+  try {
+    const user = await db.getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: "No account found with this email address." });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins validity
+
+    await db.setUserResetOtp(email, otp, expires);
+    await sendResetOtpEmail(user, otp);
+
+    res.json({ message: "A password reset OTP has been sent to your email address." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to process forgot password request." });
+  }
+});
+
+// 1c-2. Auth Verify OTP
+app.post('/api/auth/verify-otp', async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required." });
+  }
+
+  try {
+    const isValid = await db.verifyUserOtp(email, otp);
+    if (!isValid) {
+      return res.status(400).json({ error: "Invalid or expired One-Time Password (OTP)." });
+    }
+    res.json({ success: true, message: "OTP verified successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to verify OTP." });
+  }
+});
+
+// 1c-3. Auth Reset Password
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ error: "Email, OTP, and new password are required." });
+  }
+
+  try {
+    const updatedUser = await db.resetUserPassword(email, otp, newPassword);
+    if (!updatedUser) {
+      return res.status(400).json({ error: "Failed to reset password. OTP may have expired or is invalid." });
+    }
+    res.json({ success: true, message: "Your password has been reset successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to reset password." });
+  }
+});
+
 // 1d. Users List (Service Officer only)
 app.get('/api/users', async (req, res) => {
   try {

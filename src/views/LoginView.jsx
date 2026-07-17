@@ -8,6 +8,14 @@ export default function LoginView({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
+  // Forgot Password State
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1 = enter email, 2 = enter OTP & reset password
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [forgotEmailDomainError, setForgotEmailDomainError] = useState('');
+
   // Signup State
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
@@ -46,7 +54,75 @@ export default function LoginView({ onLogin }) {
     setError('');
     setSuccess('');
 
-    if (isLoginMode) {
+    if (isForgotPasswordMode) {
+      if (forgotPasswordStep === 1) {
+        if (!forgotEmail.trim()) {
+          setError("Please enter your email address.");
+          return;
+        }
+        if (!forgotEmail.toLowerCase().endsWith('@semcogroups.com')) {
+          setError("Access denied. Only @semcogroups.com emails are allowed.");
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const res = await fetch('https://service-backend-jhq0.onrender.com/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: forgotEmail })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Failed to request password reset");
+          }
+
+          const data = await res.json();
+          setSuccess(data.message || "A password reset OTP has been sent to your email address.");
+          setForgotPasswordStep(2);
+        } catch (err) {
+          console.error(err);
+          setError(err.message || "Failed to process request.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // Step 2: verify OTP and reset password
+        if (!otp.trim() || !newPassword.trim()) {
+          setError("Please fill in both OTP and your new password.");
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const res = await fetch('https://service-backend-jhq0.onrender.com/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: forgotEmail, otp, newPassword })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Failed to reset password");
+          }
+
+          const data = await res.json();
+          setSuccess(data.message || "Your password has been reset successfully. You can now login.");
+          setIsForgotPasswordMode(false);
+          setIsLoginMode(true);
+          setForgotPasswordStep(1);
+          setForgotEmail('');
+          setOtp('');
+          setNewPassword('');
+        } catch (err) {
+          console.error(err);
+          setError(err.message || "Failed to reset password.");
+        } finally {
+          setLoading(false);
+        }
+      }
+    } else if (isLoginMode) {
       if (!email.trim() || !password.trim()) {
         setError("Please enter both email and password.");
         return;
@@ -144,7 +220,7 @@ export default function LoginView({ onLogin }) {
           }}>
             <img src="/semco_logo.png" alt="SEMCO Logo" style={{ height: '48px', objectFit: 'contain' }} />
           </div>
-          <h2 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 800 }}>{isLoginMode ? 'Staff Portal Login' : 'Create Staff Account'}</h2>
+          <h2 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 800 }}>{isForgotPasswordMode ? 'Reset Password' : (isLoginMode ? 'Staff Portal Login' : 'Create Staff Account')}</h2>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
             SEMCORP Process & Vacuum Systems Pvt. Ltd.
           </p>
@@ -182,127 +258,235 @@ export default function LoginView({ onLogin }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {isLoginMode ? (
-            <>
-              <div>
-                <label htmlFor="login-email" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={14} /> Email Address</label>
-                <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setEmail(val);
-                    setEmailDomainError(validateEmailDomain(val));
-                  }}
-                  placeholder="e.g. name@semcogroups.com"
-                  required
-                  inputMode="email"
-                  autoComplete="username"
-                  style={emailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
-                />
-                {emailDomainError && (
-                  <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{emailDomainError}</p>
-                )}
-              </div>
+        {isForgotPasswordMode ? (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {forgotPasswordStep === 1 ? (
+              <>
+                <div>
+                  <label htmlFor="forgot-email" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={14} /> Registered Email Address</label>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setForgotEmail(val);
+                      setForgotEmailDomainError(validateEmailDomain(val));
+                    }}
+                    placeholder="e.g. name@semcogroups.com"
+                    required
+                    inputMode="email"
+                    style={forgotEmailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
+                  />
+                  {forgotEmailDomainError && (
+                    <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{forgotEmailDomainError}</p>
+                  )}
+                </div>
+                
+                <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px', minHeight: '44px' }}>
+                  {loading ? 'Sending OTP...' : 'Send Reset OTP'}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '4px' }}>
+                  An OTP has been sent to <strong>{forgotEmail}</strong>. Enter it below along with your new password.
+                </div>
 
-              <div>
-                <label htmlFor="login-password">Password</label>
-                <input
-                  id="login-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <label htmlFor="signup-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><User size={14} /> Full Name</label>
-                <input
-                  id="signup-name"
-                  type="text"
-                  value={signupName}
-                  onChange={(e) => setSignupName(e.target.value)}
-                  placeholder="Enter full name"
-                  required
-                />
-              </div>
+                <div>
+                  <label htmlFor="reset-otp" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Lock size={14} /> One-Time Password (OTP)</label>
+                  <input
+                    id="reset-otp"
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    required
+                    maxLength={6}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    style={{ letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center', fontSize: '16px' }}
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="signup-email" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={14} /> Email Address (@semcogroups.com)</label>
-                <input
-                  id="signup-email"
-                  type="email"
-                  value={signupEmail}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setSignupEmail(val);
-                    setSignupEmailDomainError(validateEmailDomain(val));
-                  }}
-                  placeholder="e.g. name@semcogroups.com"
-                  required
-                  inputMode="email"
-                  autoComplete="username"
-                  style={signupEmailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
-                />
-                {signupEmailDomainError && (
-                  <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{signupEmailDomainError}</p>
-                )}
-              </div>
+                <div>
+                  <label htmlFor="new-password">New Password</label>
+                  <input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    autoComplete="new-password"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="signup-phone" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={14} /> WhatsApp Mobile Number</label>
-                <input
-                  id="signup-phone"
-                  type="tel"
-                  value={signupPhone}
-                  onChange={(e) => setSignupPhone(e.target.value)}
-                  placeholder="e.g. +919876543210"
-                  required
-                  inputMode="tel"
-                />
-              </div>
+                <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px', minHeight: '44px' }}>
+                  {loading ? 'Resetting Password...' : 'Reset Password'}
+                </button>
+              </>
+            )}
 
-              <div>
-                <label htmlFor="signup-password">Password</label>
-                <input
-                  id="signup-password"
-                  type="password"
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
-            </>
-          )}
+            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+              <button 
+                type="button"
+                className="btn btn-secondary" 
+                onClick={() => {
+                  setIsForgotPasswordMode(false);
+                  setForgotPasswordStep(1);
+                  setForgotEmail('');
+                  setOtp('');
+                  setNewPassword('');
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{ fontSize: isMobile ? '12px' : '12.5px', background: 'none', border: 'none', color: 'var(--primary)', padding: 0 }}
+              >
+                Back to Sign In
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {isLoginMode ? (
+                <>
+                  <div>
+                    <label htmlFor="login-email" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={14} /> Email Address</label>
+                    <input
+                      id="login-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEmail(val);
+                        setEmailDomainError(validateEmailDomain(val));
+                      }}
+                      placeholder="e.g. name@semcogroups.com"
+                      required
+                      inputMode="email"
+                      autoComplete="username"
+                      style={emailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
+                    />
+                    {emailDomainError && (
+                      <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{emailDomainError}</p>
+                    )}
+                  </div>
 
-          <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px', minHeight: '44px' }}>
-            {loading ? 'Processing...' : isLoginMode ? 'Sign In' : 'Register Account'}
-          </button>
-        </form>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label htmlFor="login-password" style={{ margin: 0 }}>Password</label>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsForgotPasswordMode(true);
+                          setForgotPasswordStep(1);
+                          setForgotEmail(email);
+                          setError('');
+                          setSuccess('');
+                        }}
+                        style={{ background: 'none', border: 'none', color: 'var(--primary)', padding: 0, fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <input
+                      id="login-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label htmlFor="signup-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><User size={14} /> Full Name</label>
+                    <input
+                      id="signup-name"
+                      type="text"
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      placeholder="Enter full name"
+                      required
+                    />
+                  </div>
 
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <button 
-            type="button"
-            className="btn btn-secondary" 
-            onClick={() => {
-              setIsLoginMode(!isLoginMode);
-              setError('');
-              setSuccess('');
-            }}
-            style={{ fontSize: isMobile ? '12px' : '12.5px', background: 'none', border: 'none', color: 'var(--primary)', padding: 0 }}
-          >
-            {isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
-          </button>
-        </div>
+                  <div>
+                    <label htmlFor="signup-email" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={14} /> Email Address (@semcogroups.com)</label>
+                    <input
+                      id="signup-email"
+                      type="email"
+                      value={signupEmail}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSignupEmail(val);
+                        setSignupEmailDomainError(validateEmailDomain(val));
+                      }}
+                      placeholder="e.g. name@semcogroups.com"
+                      required
+                      inputMode="email"
+                      autoComplete="username"
+                      style={signupEmailDomainError ? { borderColor: 'var(--danger)', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.15)' } : {}}
+                    />
+                    {signupEmailDomainError && (
+                      <p style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', fontWeight: 500 }}>{signupEmailDomainError}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="signup-phone" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={14} /> WhatsApp Mobile Number</label>
+                    <input
+                      id="signup-phone"
+                      type="tel"
+                      value={signupPhone}
+                      onChange={(e) => setSignupPhone(e.target.value)}
+                      placeholder="e.g. +919876543210"
+                      required
+                      inputMode="tel"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="signup-password">Password</label>
+                    <input
+                      id="signup-password"
+                      type="password"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      autoComplete="new-password"
+                    />
+                  </div>
+                </>
+              )}
+
+              <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', marginTop: '8px', minHeight: '44px' }}>
+                {loading ? 'Processing...' : isLoginMode ? 'Sign In' : 'Register Account'}
+              </button>
+            </form>
+
+            <div style={{ textAlign: 'center', marginTop: '16px' }}>
+              <button 
+                type="button"
+                className="btn btn-secondary" 
+                onClick={() => {
+                  setIsLoginMode(!isLoginMode);
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{ fontSize: isMobile ? '12px' : '12.5px', background: 'none', border: 'none', color: 'var(--primary)', padding: 0 }}
+              >
+                {isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+              </button>
+            </div>
+          </>
+        )}
 
       </div>
     </div>

@@ -53,6 +53,36 @@ class MongoDBWrapper {
     return user.toObject();
   }
 
+  async setUserResetOtp(email, otp, expires) {
+    const user = await User.findOne({ email: new RegExp('^' + email.trim() + '$', 'i') });
+    if (!user) return null;
+    user.reset_otp = otp;
+    user.reset_otp_expires = expires;
+    await user.save();
+    return user.toObject();
+  }
+
+  async verifyUserOtp(email, otp) {
+    const user = await User.findOne({ email: new RegExp('^' + email.trim() + '$', 'i') });
+    if (!user) return false;
+    if (!user.reset_otp || user.reset_otp !== otp) return false;
+    if (!user.reset_otp_expires || user.reset_otp_expires < new Date()) return false;
+    return true;
+  }
+
+  async resetUserPassword(email, otp, newPassword) {
+    const user = await User.findOne({ email: new RegExp('^' + email.trim() + '$', 'i') });
+    if (!user) return null;
+    if (!user.reset_otp || user.reset_otp !== otp) return null;
+    if (!user.reset_otp_expires || user.reset_otp_expires < new Date()) return null;
+
+    user.password = newPassword;
+    user.reset_otp = null;
+    user.reset_otp_expires = null;
+    await user.save();
+    return user.toObject();
+  }
+
   async getUserById(id) {
     if (!id) return null;
     return await User.findOne({ id: parseInt(id) }).lean();

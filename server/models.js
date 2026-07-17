@@ -9,7 +9,9 @@ const UserSchema = new mongoose.Schema({
   phone_number: { type: String, required: true },
   is_available: { type: Boolean, default: true },
   is_verified: { type: Boolean, default: false },
-  verification_token: { type: String, default: null }
+  verification_token: { type: String, default: null },
+  reset_otp: { type: String, default: null },
+  reset_otp_expires: { type: Date, default: null }
 });
 
 const CompanySchema = new mongoose.Schema({
